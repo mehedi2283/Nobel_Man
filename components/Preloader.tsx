@@ -66,7 +66,7 @@ const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
             className="w-16 md:w-20 lg:w-24"
         >
             <img 
-                src="images/logo_n.png" 
+                src="/images/logo_n.png" 
                 alt="Nobel Logo" 
                 className="w-full h-full object-contain brightness-0 invert" 
             />

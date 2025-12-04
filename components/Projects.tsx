@@ -13,72 +13,72 @@ export const projectsData: Project[] = [
     id: 'flownest',
     title: 'FlowNest Dashboard',
     category: 'UI/UX Design',
-    image: 'images/work_1.png',
+    image: '/images/work_1.png',
     description: 'A comprehensive analytics dashboard designed for SaaS businesses to track KPIs, revenue, and user growth in real-time. The goal was to simplify complex data visualization into an intuitive, actionable interface.',
     role: 'Lead Product Designer',
     year: '2023',
     client: 'FlowNest Inc.',
     gallery: [
-        'images/work_1.png',
-        'images/work_2.png',
-        'images/work_3.png',
-        'images/work_4.png',
-        'images/work_1.png',
-        'images/work_2.png'
+        '/images/work_1.png',
+        '/images/work_2.png',
+        '/images/work_3.png',
+        '/images/work_4.png',
+        '/images/work_1.png',
+        '/images/work_2.png'
     ]
   },
   {
     id: 'fit-track',
     title: 'FitPulse Mobile App',
     category: 'Mobile Application',
-    image: 'images/work_2.png',
+    image: '/images/work_2.png',
     description: 'A fitness tracking application focused on holistic health. Features include workout planning, meal tracking, and progress visualization. The dark mode UI was chosen to reduce eye strain during early morning or late night workouts.',
     role: 'UI Designer',
     year: '2024',
     client: 'FitPulse',
     gallery: [
-        'images/work_2.png',
-        'images/work_3.png',
-        'images/work_4.png',
-        'images/work_1.png',
-        'images/work_2.png',
-        'images/work_3.png'
+        '/images/work_2.png',
+        '/images/work_3.png',
+        '/images/work_4.png',
+        '/images/work_1.png',
+        '/images/work_2.png',
+        '/images/work_3.png'
     ]
   },
   {
     id: 'smart-home',
     title: 'Lumina Smart Home',
     category: 'IoT Interface',
-    image: 'images/work_3.png',
+    image: '/images/work_3.png',
     description: 'Control your entire home from a single app. This project involved creating a design system for IoT device controls, ensuring consistency across lighting, temperature, and security modules.',
     role: 'UX Researcher & Designer',
     year: '2022',
     client: 'Lumina Systems',
     gallery: [
-        'images/work_3.png',
-        'images/work_4.png',
-        'images/work_1.png',
-        'images/work_2.png',
-        'images/work_3.png',
-        'images/work_4.png'
+        '/images/work_3.png',
+        '/images/work_4.png',
+        '/images/work_1.png',
+        '/images/work_2.png',
+        '/images/work_3.png',
+        '/images/work_4.png'
     ]
   },
   {
     id: 'invest-pro',
     title: 'InvestPro Landing',
     category: 'Web Design',
-    image: 'images/work_4.png',
+    image: '/images/work_4.png',
     description: 'High-conversion landing page for a fintech startup. The design focuses on trust, clarity, and directing user attention to the primary call-to-action through strategic layout and typography.',
     role: 'Web Designer',
     year: '2023',
     client: 'InvestPro',
     gallery: [
-        'images/work_4.png',
-        'images/work_1.png',
-        'images/work_2.png',
-        'images/work_3.png',
-        'images/work_4.png',
-        'images/work_1.png'
+        '/images/work_4.png',
+        '/images/work_1.png',
+        '/images/work_2.png',
+        '/images/work_3.png',
+        '/images/work_4.png',
+        '/images/work_1.png'
     ]
   }
 ];
