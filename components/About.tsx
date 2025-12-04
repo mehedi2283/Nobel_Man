@@ -11,14 +11,14 @@ interface ClientLogo {
 }
 
 const clients: ClientLogo[] = [
-  { id: 'renowned', name: "RENOWNED", sub: "FINISHING", icon: <PaintBucket size={24}/>, logoUrl: "images\logo_1_Color.png" },
-  { id: 'house', name: "The House", sub: "Flipping Coach", icon: <Hammer size={24}/>, logoUrl: "images\logo_2_Color.png" },
-  { id: 'london', name: "LONDON", sub: "LANGUAGE CLUB", icon: <Languages size={24}/>, logoUrl: "images\logo_3_Color.png" },
-  { id: 'rios', name: "RIOS BROTHERS", sub: "CONCRETE SERVICES", icon: <Building2 size={24}/>, logoUrl: "images\logo_4_Color.png" },
-  { id: 'foundations', name: "FOUNDATIONS", sub: "TO SUCCESS", icon: <TreeDeciduous size={24}/>, logoUrl: "images\logo_5_Color.png" },
-  { id: 'tormynak', name: "TORMYNAK", sub: "CONTRACTING", icon: <Briefcase size={24}/>, logoUrl: "images\logo_6_Color.png" },
-  { id: 'campbell', name: "CAMPBELL", sub: "DERMATOLOGY", icon: <Crown size={24}/>, logoUrl: "images\logo_7_Color.png" },
-  { id: 'hisnew', name: "HIS NEW", sub: "CREATION MINISTRIES", icon: <HeartHandshake size={24}/>, logoUrl: "images\logo_8_Color.png" },
+  { id: 'renowned', name: "RENOWNED", sub: "FINISHING", icon: <PaintBucket size={24}/>, logoUrl: "images\logo_1_color.png" },
+  { id: 'house', name: "The House", sub: "Flipping Coach", icon: <Hammer size={24}/>, logoUrl: "images\logo_2_color.png" },
+  { id: 'london', name: "LONDON", sub: "LANGUAGE CLUB", icon: <Languages size={24}/>, logoUrl: "images\logo_3_color.png" },
+  { id: 'rios', name: "RIOS BROTHERS", sub: "CONCRETE SERVICES", icon: <Building2 size={24}/>, logoUrl: "images\logo_4_color.png" },
+  { id: 'foundations', name: "FOUNDATIONS", sub: "TO SUCCESS", icon: <TreeDeciduous size={24}/>, logoUrl: "images\logo_5_color.png" },
+  { id: 'tormynak', name: "TORMYNAK", sub: "CONTRACTING", icon: <Briefcase size={24}/>, logoUrl: "images\logo_6_color.png" },
+  { id: 'campbell', name: "CAMPBELL", sub: "DERMATOLOGY", icon: <Crown size={24}/>, logoUrl: "images\logo_7_color.png" },
+  { id: 'hisnew', name: "HIS NEW", sub: "CREATION MINISTRIES", icon: <HeartHandshake size={24}/>, logoUrl: "images\logo_8_color.png" },
 ];
 
 const About: React.FC = () => {
@@ -91,7 +91,7 @@ const About: React.FC = () => {
                 {/* Vertical Portrait */}
                 <div className="mt-auto w-full h-[300px] relative">
                      <img 
-                        src="images\about_img1_Color.png" 
+                        src="images\about_img1_color.png" 
                         alt="Nobel Portrait" 
                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 object-top"
                     />
@@ -111,7 +111,7 @@ const About: React.FC = () => {
             {/* Landscape Image */}
             <div className="w-full h-64 overflow-hidden">
                 <img 
-                    src="images\about_img2_Color.png" 
+                    src="images\about_img2_color.png" 
                     alt="Nobel Working" 
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
                 />

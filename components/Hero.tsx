@@ -105,7 +105,7 @@ const Hero: React.FC<HeroProps> = ({ startAnimation = true }) => {
                 className="absolute bottom-0 right-0 w-full h-[50vh] lg:h-[85vh] flex items-end justify-center lg:justify-end"
             >
                 <img 
-                  src="images\hero_img_Color.png" 
+                  src="images\hero_img_color.png" 
                   alt="Nobel" 
                   className="max-h-full w-auto object-contain object-bottom drop-shadow-2xl grayscale contrast-110 transition-all duration-700 group-hover:grayscale-0"
                 />
