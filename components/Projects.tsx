@@ -13,7 +13,7 @@ export const projectsData: Project[] = [
     id: 'flownest',
     title: 'FlowNest Dashboard',
     category: 'UI/UX Design',
-    image: 'https://storage.googleapis.com/msgsndr/xnK9XgHdPIFUajSVVFfV/media/69300a12e0f092686754bd01.png',
+    image: 'images\work_1.png',
     description: 'A comprehensive analytics dashboard designed for SaaS businesses to track KPIs, revenue, and user growth in real-time. The goal was to simplify complex data visualization into an intuitive, actionable interface.',
     role: 'Lead Product Designer',
     year: '2023',
