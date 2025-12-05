@@ -107,7 +107,7 @@ const Hero: React.FC<HeroProps> = ({ startAnimation = true }) => {
                 <img 
                   src="/images/hero_img_color.png" 
                   alt="Nobel" 
-                  className="max-h-full w-auto object-contain object-bottom drop-shadow-2xl grayscale contrast-110 transition-all duration-700 group-hover:grayscale-0"
+                  className="max-h-full w-auto object-contain object-bottom grayscale contrast-110 transition-all duration-700 group-hover:grayscale-0"
                 />
                 {/* White Fade Gradient */}
                 <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent pointer-events-none z-10" />
