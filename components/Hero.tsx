@@ -76,7 +76,7 @@ const Hero: React.FC<HeroProps> = ({ startAnimation = true }) => {
               className="space-y-2 lg:space-y-4"
           >
             <p className="text-lg text-gray-600 font-medium ml-1">Hello</p>
-            <h1 className="text-5xl md:text-7xl lg:text-7xl font-medium text-gray-900 leading-[1.1] tracking-tight font-aeonik">
+            <h1 className="text-4xl md:text-7xl lg:text-7xl font-medium text-gray-900 leading-[1.1] tracking-tight font-aeonik">
               <span className="block mb-2">—It’s Nobel</span>
               <span className="block">UX & UI Designer</span>
             </h1>
