@@ -66,7 +66,7 @@ const Footer: React.FC = () => {
             </div>
             
             <div>
-                Design & Developed By Nobel
+                Design & Developed By P4KB0Y
             </div>
             
             <div>
