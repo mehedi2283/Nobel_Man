@@ -77,19 +77,19 @@ const About: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="lg:col-span-4"
           >
-            <div className="bg-white p-8 pb-0 h-full shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
+            <div className="bg-white p-8 pb-0 h-full shadow-sm flex flex-col items-start text-left relative overflow-hidden group pb-7">
                 {/* Globe Icon */}
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-6 text-gray-900">
                     <Globe size={32} strokeWidth={1.5} />
                 </div>
                 
                 <h3 className="text-5xl font-medium text-gray-900 mb-4">100+</h3>
-                <p className="text-gray-500 mb-8 max-w-[200px]">
+                <p className="text-gray-500 mb-8 max-w-xs">
                     User-focused screens created from wireframes to polished UI.
                 </p>
 
                 {/* Vertical Portrait */}
-                <div className="mt-auto w-full h-[300px] relative">
+                <div className="mt-auto w-full h-[300px] relative rounded-sm overflow-hidden">
                      <img 
                         src="/images/about_img1_color.png" 
                         alt="Nobel Portrait" 
