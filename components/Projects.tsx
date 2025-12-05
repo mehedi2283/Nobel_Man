@@ -99,14 +99,17 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectSelect }) => {
             Selected Works
           </motion.h2>
           
-          <motion.button
+          <motion.a
+             href="https://www.behance.net/shafiulnobel"
+             target="_blank"
+             rel="noopener noreferrer"
              initial={{ opacity: 0, x: 20 }}
              whileInView={{ opacity: 1, x: 0 }}
              viewport={{ once: true }}
              className="hidden md:block px-8 py-3 border border-gray-300 text-gray-900 font-medium hover:bg-black hover:text-white hover:border-black transition-all duration-300"
           >
             More Works
-          </motion.button>
+          </motion.a>
         </div>
 
         {/* Grid */}
@@ -123,14 +126,17 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectSelect }) => {
 
         {/* Mobile Button - Show only on mobile */}
         <div className="mt-12 flex justify-center md:hidden">
-            <motion.button
+            <motion.a
+                href="https://www.behance.net/shafiulnobel"
+                target="_blank"
+                rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 className="px-8 py-3 border border-gray-300 text-gray-900 font-medium hover:bg-black hover:text-white hover:border-black transition-all duration-300"
             >
                 More Works
-            </motion.button>
+            </motion.a>
         </div>
       </div>
     </section>
