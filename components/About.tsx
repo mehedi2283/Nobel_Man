@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef } from 'react';
+import { motion, useInView, useMotionValue, useSpring } from 'framer-motion';
 import { Download, Globe, Linkedin, ArrowDown, Plus, TreeDeciduous, Hammer, Languages, Building2, HeartHandshake, PaintBucket, Briefcase, Crown, Instagram } from 'lucide-react';
 
 interface ClientLogo {
@@ -23,7 +23,7 @@ const clients: ClientLogo[] = [
 
 const About: React.FC = () => {
   return (
-    <section id="about" className="py-20 lg:py-32 bg-gray-50 overflow-hidden">
+    <section id="about" className="py-20 lg:py-32 bg-[#f7f7f7] overflow-hidden">
       <div className="container mx-auto px-6 md:px-16 max-w-[1400px]">
         
         {/* Main Grid */}
@@ -77,19 +77,21 @@ const About: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="lg:col-span-4"
           >
-            <div className="bg-white p-8 pb-0 h-full shadow-sm flex flex-col items-start text-left relative overflow-hidden group pb-7">
+            <div className="bg-white p-8 h-full shadow-sm flex flex-col items-start text-left relative overflow-hidden group">
                 {/* Globe Icon */}
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-6 text-gray-900">
                     <Globe size={32} strokeWidth={1.5} />
                 </div>
                 
-                <h3 className="text-5xl font-medium text-gray-900 mb-4">100+</h3>
+                <h3 className="text-5xl font-medium text-gray-900 mb-4 flex items-center">
+                    <Counter value={100} />+
+                </h3>
                 <p className="text-gray-500 mb-8 max-w-xs">
                     User-focused screens created from wireframes to polished UI.
                 </p>
 
                 {/* Vertical Portrait */}
-                <div className="mt-auto w-full h-[300px] relative rounded-sm overflow-hidden">
+                <div className="mt-auto w-full h-[300px] relative overflow-hidden rounded-md">
                      <img 
                         src="/images/about_img1_color.png" 
                         alt="Nobel Portrait" 
@@ -109,11 +111,11 @@ const About: React.FC = () => {
             className="lg:col-span-4 flex flex-col gap-8 group"
           >
             {/* Landscape Image */}
-            <div className="w-full h-64 overflow-hidden hidden md:block">
+            <div className="w-full h-64 overflow-hidden hidden lg:block">
                 <img 
                     src="/images/about_img2_color.png" 
                     alt="Nobel Working" 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105 rounded-sm"
                 />
             </div>
 
@@ -181,5 +183,31 @@ const LogoItem = ({ icon, name, logoUrl }: { icon: React.ReactNode, name: string
         )}
     </div>
 );
+
+const Counter = ({ value }: { value: number }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-20px" });
+  const motionValue = useMotionValue(0);
+  const springValue = useSpring(motionValue, { 
+    damping: 30, 
+    stiffness: 100 
+  });
+
+  useEffect(() => {
+    if (inView) {
+      motionValue.set(value);
+    }
+  }, [inView, value, motionValue]);
+
+  useEffect(() => {
+    return springValue.on("change", (latest) => {
+      if (ref.current) {
+        ref.current.textContent = Math.round(latest).toString();
+      }
+    });
+  }, [springValue]);
+
+  return <span ref={ref}>0</span>;
+};
 
 export default About;
