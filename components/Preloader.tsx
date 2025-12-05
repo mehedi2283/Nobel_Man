@@ -63,7 +63,7 @@ const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="w-16 md:w-20 lg:w-24"
+            className="w-16 md:w-20 lg:w-40"
         >
             <img 
                 src="/images/logo_n.svg" 
