@@ -206,79 +206,75 @@ const FloatingInput: React.FC<FloatingInputProps> = ({ label, name, value, onCha
 
 const SubmitButton: React.FC<{ status: 'idle' | 'loading' | 'success' | 'error' }> = ({ status }) => {
     return (
-        <motion.button
-            layout
+        <button
+            type="submit"
             disabled={status !== 'idle'}
             className={`
-                relative h-16 flex items-center justify-center gap-3 font-medium text-lg overflow-hidden transition-colors duration-500
-                ${status === 'success' ? 'bg-green-500 text-white' : status === 'error' ? 'bg-red-500 text-white' : 'bg-black text-white hover:bg-gray-800'}
-                ${status === 'loading' ? 'w-16 px-0' : 'w-full md:w-auto min-w-[200px] px-8'}
+                group relative h-16 flex items-center justify-center font-medium text-lg overflow-hidden transition-all duration-500 rounded-lg
+                ${status === 'success' ? 'bg-green-500 text-white w-full md:w-auto min-w-[200px]' : status === 'error' ? 'bg-red-500 text-white w-full md:w-auto min-w-[200px]' : 'bg-black text-white w-full md:w-auto min-w-[200px]'}
+                ${status === 'loading' ? '!w-16 px-0 rounded-full' : 'px-8'}
             `}
-            transition={{
-                layout: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
-            }}
         >
-            <AnimatePresence mode="popLayout" initial={false}>
-                {status === 'idle' && (
-                    <motion.div
-                        key="idle"
-                        layout="position"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-center gap-3 whitespace-nowrap"
-                    >
-                        <span>Send Message</span>
-                        <Send size={20} />
-                    </motion.div>
-                )}
+            {/* White Fill Effect only on Idle */}
+            {status === 'idle' && (
+                 <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.86,0,0.07,1)]" />
+            )}
 
-                {status === 'loading' && (
-                    <motion.div
-                        key="loading"
-                        layout="position"
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.5 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-center justify-center"
-                    >
-                        <Loader2 size={24} className="animate-spin" />
-                    </motion.div>
-                )}
+            <div className="relative z-10 flex items-center gap-3">
+                <AnimatePresence mode="popLayout" initial={false}>
+                    {status === 'idle' && (
+                        <motion.div
+                            key="idle"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-center gap-3 whitespace-nowrap group-hover:text-black transition-colors duration-500"
+                        >
+                            <span>Send Message</span>
+                            <Send size={20} />
+                        </motion.div>
+                    )}
 
-                {status === 'success' && (
-                    <motion.div
-                        key="success"
-                        layout="position"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-center gap-3 whitespace-nowrap"
-                    >
-                        <span>Message Sent</span>
-                        <Check size={20} />
-                    </motion.div>
-                )}
+                    {status === 'loading' && (
+                        <motion.div
+                            key="loading"
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5 }}
+                            className="flex items-center justify-center"
+                        >
+                            <Loader2 size={24} className="animate-spin" />
+                        </motion.div>
+                    )}
 
-                {status === 'error' && (
-                    <motion.div
-                        key="error"
-                        layout="position"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-center gap-3 whitespace-nowrap"
-                    >
-                        <span>Try Again</span>
-                        <AlertCircle size={20} />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.button>
+                    {status === 'success' && (
+                        <motion.div
+                            key="success"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="flex items-center gap-3 whitespace-nowrap"
+                        >
+                            <span>Message Sent</span>
+                            <Check size={20} />
+                        </motion.div>
+                    )}
+
+                    {status === 'error' && (
+                        <motion.div
+                            key="error"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="flex items-center gap-3 whitespace-nowrap"
+                        >
+                            <span>Try Again</span>
+                            <AlertCircle size={20} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </button>
     );
 };
 
@@ -288,7 +284,7 @@ const SocialLink = ({ href, icon, label }: { href: string; icon: React.ReactNode
     target="_blank" 
     rel="noopener noreferrer"
     aria-label={label}
-    className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white hover:border-black transition-all duration-300"
+    className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white hover:border-black transition-all duration-300 hover:scale-110"
   >
     {icon}
   </a>

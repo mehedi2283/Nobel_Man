@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
-import { ArrowUpRight, ArrowRight, ArrowLeft, RotateCcw, Heart, MessageCircle } from 'lucide-react';
+import { ArrowUpRight, ArrowRight, ArrowLeft, RotateCcw, Heart, MessageCircle, ArrowDown } from 'lucide-react';
 import { Project } from '../types';
 import { projectService } from '../services/projectService';
 
@@ -41,7 +41,7 @@ const Projects: React.FC<ProjectsProps> = ({ projects, onProjectSelect, onProjec
       <div className="container mx-auto px-6 md:px-16 max-w-[1400px]">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start mb-16 gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
           <motion.h2 
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -92,38 +92,23 @@ const Projects: React.FC<ProjectsProps> = ({ projects, onProjectSelect, onProjec
                 {/* Pagination Controls */}
                 <div className="mt-16 flex justify-center gap-4">
                     {hasPrev && (
-                        <motion.button
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            onClick={handlePrev}
-                            className="px-8 py-4 bg-white border border-gray-200 text-gray-900 font-medium hover:bg-black hover:text-white hover:border-black transition-all duration-300 shadow-sm flex items-center gap-2 rounded-full"
-                        >
+                        <MagneticButton onClick={handlePrev}>
                             <ArrowLeft size={18} />
-                            Previous
-                        </motion.button>
+                            <span>Previous</span>
+                        </MagneticButton>
                     )}
 
                     {hasNext ? (
-                        <motion.button
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            onClick={handleNext}
-                            className="px-8 py-4 bg-white border border-gray-200 text-gray-900 font-medium hover:bg-black hover:text-white hover:border-black transition-all duration-300 shadow-sm flex items-center gap-2 rounded-full"
-                        >
-                            Load More Works
+                        <MagneticButton onClick={handleNext}>
+                            <span>Load More Works</span>
                             <ArrowRight size={18} />
-                        </motion.button>
+                        </MagneticButton>
                     ) : (
                         totalPages > 1 && (
-                            <motion.button
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                onClick={handleReset}
-                                className="px-8 py-4 bg-white border border-gray-200 text-gray-900 font-medium hover:bg-black hover:text-white hover:border-black transition-all duration-300 shadow-sm flex items-center gap-2 rounded-full"
-                            >
+                            <MagneticButton onClick={handleReset}>
                                 <RotateCcw size={18} />
-                                Back to Start
-                            </motion.button>
+                                <span>Back to Start</span>
+                            </MagneticButton>
                         )
                     )}
                 </div>
@@ -145,6 +130,27 @@ const Projects: React.FC<ProjectsProps> = ({ projects, onProjectSelect, onProjec
     </section>
   );
 };
+
+// Reusable Animated Button
+const MagneticButton: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({ onClick, children }) => {
+    return (
+        <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={onClick}
+            className="group relative px-8 py-4 bg-white border border-gray-200 text-gray-900 font-medium rounded-full overflow-hidden transition-colors hover:border-black shadow-sm"
+        >
+             {/* Fill Effect */}
+             <div className="absolute inset-0 bg-black translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.86,0,0.07,1)]" />
+             
+             {/* Content */}
+             <div className="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors duration-500">
+                {children}
+             </div>
+        </motion.button>
+    );
+};
+
 
 interface ProjectCardProps { 
   project: Project; 

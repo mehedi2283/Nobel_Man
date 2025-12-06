@@ -503,12 +503,20 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project: initialProject, 
                                         className="w-full text-lg font-medium border-b border-gray-200 py-2 focus:outline-none focus:border-black transition-colors bg-transparent resize-none placeholder-gray-300 pr-12 min-h-[60px]"
                                         placeholder="What do you think about this project?"
                                     />
+                                    
+                                    {/* Animated Submit Button */}
                                     <button 
                                         type="submit" 
                                         disabled={submitStatus === 'loading' || !newCommentAuthor || !newCommentText}
-                                        className="absolute right-0 bottom-4 p-3 bg-black text-white rounded-full hover:scale-110 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all shadow-lg z-10"
+                                        className="group absolute right-0 bottom-4 w-12 h-12 bg-black text-white rounded-full overflow-hidden shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all z-10"
                                     >
-                                        {submitStatus === 'loading' ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}
+                                        {/* Fill Effect */}
+                                        <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.86,0,0.07,1)]" />
+                                        
+                                        {/* Icon Content */}
+                                        <div className="relative z-10 w-full h-full flex items-center justify-center group-hover:text-black transition-colors duration-300">
+                                            {submitStatus === 'loading' ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}
+                                        </div>
                                     </button>
                                 </div>
                             </form>
@@ -734,11 +742,20 @@ const ParallaxImage = ({ src, alt }: { src: string; alt: string }) => {
                     className={`w-full h-full object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
                 />
              </motion.div>
-             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
-                    <ZoomIn size={16} />
-                    <span className="text-xs font-bold uppercase tracking-wider">View Fullscreen</span>
-                </div>
+             
+             {/* Animated View Fullscreen Button */}
+             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 backdrop-blur-0 group-hover:backdrop-blur-[2px] transition-all duration-700 ease-out flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
+                <button className="pointer-events-auto group/btn relative overflow-hidden bg-white px-8 py-4 rounded-full shadow-2xl transition-all duration-500 ease-out transform translate-y-8 scale-90 group-hover:translate-y-0 group-hover:scale-100 hover:scale-105 active:scale-95">
+                    
+                    {/* Fill Effect - Smoother easing */}
+                    <div className="absolute inset-0 bg-black translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]" />
+                    
+                    {/* Content: Text Swaps Color */}
+                    <div className="relative z-10 flex items-center gap-3 text-black group-hover/btn:text-white transition-colors duration-500">
+                        <ZoomIn size={18} />
+                        <span className="text-sm font-bold uppercase tracking-widest">View Fullscreen</span>
+                    </div>
+                </button>
              </div>
         </div>
     );

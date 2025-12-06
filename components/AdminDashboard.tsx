@@ -936,7 +936,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
                                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                    className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 p-4 z-50 w-72"
+                                                    className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 p-4 z-50 w-72"
                                                 >
                                                     {/* Calendar Header */}
                                                     <div className="flex items-center justify-between mb-4 px-2">
