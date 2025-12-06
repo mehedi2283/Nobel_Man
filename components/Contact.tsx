@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Check, Loader2, Linkedin, Instagram, ArrowRight, AlertCircle } from 'lucide-react';
+import { projectService } from '../services/projectService';
 
-const Contact: React.FC = () => {
+interface ContactProps {
+  email?: string;
+  linkedin?: string;
+  behance?: string;
+  instagram?: string;
+}
+
+const Contact: React.FC<ContactProps> = ({ 
+  email,
+  linkedin,
+  behance,
+  instagram
+}) => {
   const [formState, setFormState] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
@@ -13,23 +26,11 @@ const Contact: React.FC = () => {
     setStatus('loading');
     
     try {
-      const response = await fetch('https://n8n.srv915514.hstgr.cloud/webhook/13687cad-2319-4cb5-8eaf-1e994cbdc87e', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formState),
-      });
-
-      if (response.ok) {
-        setStatus('success');
-        setFormState({ name: '', email: '', message: '' });
-        // Reset to idle after delay
-        setTimeout(() => setStatus('idle'), 4000);
-      } else {
-        setStatus('error');
-        setTimeout(() => setStatus('idle'), 3000);
-      }
+      await projectService.sendMessage(formState);
+      setStatus('success');
+      setFormState({ name: '', email: '', message: '' });
+      // Reset to idle after delay
+      setTimeout(() => setStatus('idle'), 4000);
     } catch (error) {
       console.error('Error submitting form:', error);
       setStatus('error');
@@ -64,37 +65,41 @@ const Contact: React.FC = () => {
             </p>
             
             <div className="space-y-10">
-              <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">Email</h3>
-                <a 
-                    href="mailto:shafiulislamnobel1@gmail.com" 
-                    className="text-xl md:text-2xl text-gray-900 hover:text-gray-500 transition-colors inline-flex items-center gap-2 group"
-                >
-                  shafiulislamnobel1@gmail.com
-                  <ArrowRight size={20} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                </a>
-              </div>
-              
-              <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">Socials</h3>
-                <div className="flex gap-4">
-                    <SocialLink 
-                      href="https://www.linkedin.com/in/shafiul-nobel/" 
-                      icon={<Linkedin size={20} />} 
-                      label="LinkedIn"
-                    />
-                    <SocialLink 
-                      href="https://www.behance.net/shafiulnobel" 
-                      icon={<span className="font-bold text-lg">Be</span>} 
-                      label="Behance"
-                    />
-                    <SocialLink 
-                      href="https://www.instagram.com/shafiul_nobel" 
-                      icon={<Instagram size={20} />} 
-                      label="Instagram"
-                    />
+              {email && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">Email</h3>
+                  <a 
+                      href={`mailto:${email}`} 
+                      className="text-xl md:text-2xl text-gray-900 hover:text-gray-500 transition-colors inline-flex items-center gap-2 group"
+                  >
+                    {email}
+                    <ArrowRight size={20} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </a>
                 </div>
-              </div>
+              )}
+              
+              {(linkedin || behance || instagram) && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">Socials</h3>
+                  <div className="flex gap-4">
+                      {linkedin && <SocialLink 
+                        href={linkedin} 
+                        icon={<Linkedin size={20} />} 
+                        label="LinkedIn"
+                      />}
+                      {behance && <SocialLink 
+                        href={behance} 
+                        icon={<span className="font-bold text-lg">Be</span>} 
+                        label="Behance"
+                      />}
+                      {instagram && <SocialLink 
+                        href={instagram} 
+                        icon={<Instagram size={20} />} 
+                        label="Instagram"
+                      />}
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -104,7 +109,7 @@ const Contact: React.FC = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="bg-white lg:bg-transparent lg:rounded-none p-6 md:p-0 shadow-sm lg:shadow-none border lg:border-none border-gray-100"
+            className="bg-white lg:bg-transparent rounded-3xl lg:rounded-none p-6 md:p-0 shadow-sm lg:shadow-none border lg:border-none border-gray-100"
           >
             <form onSubmit={handleSubmit} className="space-y-10">
                 
@@ -178,7 +183,6 @@ const FloatingInput: React.FC<FloatingInputProps> = ({ label, name, value, onCha
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     rows={1}
-                    // Auto-expand could be added here, but for now simple works
                     className="w-full py-2 bg-transparent border-b border-gray-200 text-xl md:text-2xl text-gray-900 focus:outline-none resize-none min-h-[60px]"
                 />
             ) : (

@@ -22,7 +22,7 @@ const VerticalLabel: React.FC = () => {
       <div className="h-1/2 flex items-center pt-24">
       <div className="flex items-center justify-center w-8">
            <span className="text-gray-400 text-xs tracking-[0.2em] font-medium -rotate-90 whitespace-nowrap">
-           ---------------------------------------------------------
+           ---------------------------------------------------------------------------
            </span>
         </div>
       </div>

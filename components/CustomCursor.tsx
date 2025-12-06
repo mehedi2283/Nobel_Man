@@ -159,12 +159,17 @@ const CustomCursor: React.FC = () => {
           y: cursorY,
         }}
         animate={{
-          scale: isHovering ? 2.5 : 1,
+          scale: isHovering ? 1.5 : 1, // Subtle scale up (1.5 instead of 1)
           backgroundColor: isHovering ? "white" : "transparent",
           borderColor: isHovering ? "transparent" : "white"
         }}
-        // Lower damping for scale to give it a nice "bounce" when hovering
-        transition={{ type: "spring", stiffness: 400, damping: 20 }}
+        // Instant movement for x/y (duration 0), Spring for scale
+        transition={{ 
+            x: { duration: 0 },
+            y: { duration: 0 },
+            scale: { type: "spring", stiffness: 300, damping: 20 },
+            default: { duration: 0.1 }
+        }}
       >
           {/* Inner dot that disappears on hover */}
           <motion.div 

@@ -1,4 +1,4 @@
-import { PortfolioData } from './types';
+import { PortfolioData, Project } from './types';
 
 export const PORTFOLIO_DATA: PortfolioData = {
   name: "Nobel",
@@ -8,6 +8,9 @@ export const PORTFOLIO_DATA: PortfolioData = {
   bio: "I am a passionate UX & UI Designer focused on creating intuitive and aesthetically pleasing digital experiences. With over 2 years of experience and 20+ completed projects, I bridge the gap between user needs and business goals.",
   skills: ["Figma", "Adobe XD", "Prototyping", "User Research", "Wireframing", "React Basic", "Tailwind CSS"]
 };
+
+// Empty initial projects to allow manual entry from Admin Dashboard
+export const INITIAL_PROJECTS: Project[] = [];
 
 export const AI_SYSTEM_INSTRUCTION = `
 You are an AI assistant for a portfolio website of a UX/UI Designer named "${PORTFOLIO_DATA.name}".

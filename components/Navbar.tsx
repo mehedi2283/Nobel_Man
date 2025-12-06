@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  logo?: string;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ logo }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -56,16 +60,19 @@ const Navbar: React.FC = () => {
       >
         <div className="flex items-center">
           {/* Logo Image - Acts as Home Link */}
-          <div 
-              className="h-8 md:h-10 w-auto flex items-center justify-center cursor-pointer relative z-50"
-              onClick={(e) => handleScrollToSection(e, 'home')}
-          >
-              <img 
-                src="/images/logo_n.png" 
-                alt="Nobel Logo" 
-                className="h-full w-auto object-contain"
-              />
-          </div>
+          {logo && (
+            <div 
+                className="h-8 md:h-10 w-auto flex items-center justify-center cursor-pointer relative z-50"
+                onClick={(e) => handleScrollToSection(e, 'home')}
+            >
+                <img 
+                  src={logo} 
+                  alt="Logo" 
+                  className="h-full w-auto object-contain"
+                  loading="lazy"
+                />
+            </div>
+          )}
         </div>
 
         {/* Desktop Menu */}

@@ -1,7 +1,18 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Lock } from 'lucide-react';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  onAdminClick?: () => void;
+  email?: string;
+  year?: string;
+}
+
+const Footer: React.FC<FooterProps> = ({ 
+  onAdminClick, 
+  email,
+  year
+}) => {
   const scrollToContact = () => {
     const contactSection = document.getElementById('contact');
     if (contactSection) {
@@ -60,17 +71,25 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center text-sm text-gray-500 gap-4">
             <div>
-                <a href="mailto:shafiulislamnobel1@gmail.com" className="hover:text-white transition-colors">
-                    shafiulislamnobel1@gmail.com
-                </a>
+                {email && (
+                  <a href={`mailto:${email}`} className="hover:text-white transition-colors">
+                      {email}
+                  </a>
+                )}
+            </div>
+            
+            <div className="flex items-center gap-4">
+                <span>Design & Developed By Nobel</span>
+                {onAdminClick && (
+                    <button onClick={onAdminClick} className="hover:text-white transition-colors flex items-center gap-1" title="Admin Access">
+                        <Lock size={12} />
+                        Admin
+                    </button>
+                )}
             </div>
             
             <div>
-                Design & Developed By P4KB0Y
-            </div>
-            
-            <div>
-                All rights reserved, Nobel 2026
+                All rights reserved, Nobel {year || new Date().getFullYear().toString()}
             </div>
         </div>
       </div>

@@ -4,30 +4,51 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nobel - UX & UI Designer</title>
-    <link rel="icon" type="image/png" href="/images/logo_n.png" />
+    <link rel="icon" href="/images/logo_n.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="/images/logo_n.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
       /* Only hide the default cursor on devices that have a mouse/fine pointer */
-       @media (hover: hover) and (pointer: fine) {
+      @media (hover: hover) and (pointer: fine) {
         * {
           cursor: none !important;
         }
       }
       
       body {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Aeonik', 'Outfit', sans-serif;
         background-color: #f9fafb;
         overflow-x: hidden;
       }
 
-       .font-aeonik {
+      /* Custom font class for specific overrides */
+      .font-aeonik {
         font-family: 'Aeonik', 'Outfit', sans-serif;
       }
 
+      /* Global White/Light Scrollbar Styling */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: #ffffff;
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: #e5e7eb; /* tailwind gray-200 */
+        border-radius: 99px;
+        border: 2px solid #ffffff; /* Creates padding effect */
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background: #d1d5db; /* tailwind gray-300 */
+      }
 
-      /* Custom scrollbar for chat */
+      /* Custom scrollbar for chat or specific hidden areas */
       .scrollbar-hide::-webkit-scrollbar {
           display: none;
       }
@@ -44,7 +65,10 @@
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
-    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.25"
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.25",
+    "express": "https://aistudiocdn.com/express@^5.2.1",
+    "cors": "https://aistudiocdn.com/cors@^5.0.0",
+    "mongoose": "https://aistudiocdn.com/mongoose@^8.0.0"
   }
 }
 </script>
@@ -52,6 +76,6 @@
 </head>
   <body>
     <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>

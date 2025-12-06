@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, Sparkles, Loader2, RefreshCw } from 'lucide-react';
 import { ChatMessage } from '../types';
+import { projectService } from '../services/projectService';
 
 const ChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -89,6 +90,9 @@ const ChatWidget: React.FC = () => {
     setInput('');
     setIsLoading(true);
 
+    // Save User Log to DB
+    projectService.saveChatInteraction('user', userText);
+
     try {
       // Prepare history in a clean format
       const cleanHistory = messages.map(m => ({
@@ -128,6 +132,9 @@ const ChatWidget: React.FC = () => {
       if (!aiResponseText || aiResponseText === '{}') {
           aiResponseText = "I received an empty response. Please check the n8n workflow output.";
       }
+
+      // Save AI Log to DB
+      projectService.saveChatInteraction('model', aiResponseText);
 
       setMessages(prev => [...prev, { role: 'model', text: aiResponseText }]);
 
@@ -253,7 +260,7 @@ const ChatWidget: React.FC = () => {
                 </button>
               </div>
               <div className="text-center mt-2">
-                <span className="text-[10px] text-gray-400">Powered by P4KB0Y</span>
+                <span className="text-[10px] text-gray-400">Powered by n8n & Gemini</span>
               </div>
             </div>
           </motion.div>

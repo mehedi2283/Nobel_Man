@@ -13,7 +13,10 @@
     "react-dom": "^19.2.0",
     "@google/genai": "^1.30.0",
     "lucide-react": "^0.555.0",
-    "framer-motion": "^12.23.25"
+    "framer-motion": "^12.23.25",
+    "express": "^5.2.1",
+    "cors": "^5.0.0",
+    "mongoose": "^8.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
