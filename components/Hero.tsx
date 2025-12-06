@@ -98,7 +98,7 @@ const Hero: React.FC<HeroProps> = ({
               className="space-y-2 lg:space-y-4"
           >
             <p className="text-lg text-gray-600 font-medium ml-1">Hello</p>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium text-gray-900 leading-[1.1] tracking-tight font-aeonik">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-medium text-gray-900 leading-[1.1] tracking-tight font-aeonik">
               <span className="block mb-2">—It’s {name || 'Nobel'}</span>
               <span className="block">{role || 'UX & UI Designer'}</span>
             </h1>
@@ -117,7 +117,7 @@ const Hero: React.FC<HeroProps> = ({
         </div>
 
         {/* Right Content - Hero Image */}
-        <div className="flex-1 w-full h-full relative block group overflow-hidden">
+        <div className="flex-1 w-full h-full relative block group">
             {displayImage && (
               <motion.div 
                   initial={{ opacity: 0, y: 50 }}

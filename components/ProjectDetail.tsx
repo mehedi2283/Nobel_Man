@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Heart, Send, User, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform, Variants, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Heart, Send, Loader2, ArrowUpRight, ArrowDown, ChevronLeft, ChevronRight, MessageSquare, ZoomIn, X, Quote, ArrowRight } from 'lucide-react';
 import { Project, Comment } from '../types';
 import Footer from './Footer';
 import Contact from './Contact';
@@ -12,11 +12,16 @@ interface ProjectDetailProps {
   onProjectUpdate: (project: Project) => void;
 }
 
+// Utility for wrapping slider indices
+const wrap = (min: number, max: number, v: number) => {
+  const rangeSize = max - min;
+  return ((((v - min) % rangeSize) + rangeSize) % rangeSize) + min;
+};
+
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ project: initialProject, onBack, onProjectUpdate }) => {
   const [project, setProject] = useState<Project>(initialProject);
   const [likes, setLikes] = useState(initialProject.likes || 0);
   const [isLiked, setIsLiked] = useState(false);
-  const [mainImgLoaded, setMainImgLoaded] = useState(false);
   
   // Comment State
   const [comments, setComments] = useState<Comment[]>(initialProject.comments || []);
@@ -24,18 +29,40 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project: initialProject, 
   const [newCommentText, setNewCommentText] = useState('');
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success'>('idle');
 
-  // Sync state if prop changes (e.g. from parent update)
+  // Slider States
+  const [[galleryPage, galleryDirection], setGalleryPage] = useState([0, 0]);
+  const [[commentPage, commentDirection], setCommentPage] = useState([0, 0]);
+  
+  // Auto-play Control States
+  const [galleryAutoPlay, setGalleryAutoPlay] = useState(true);
+  const [commentAutoPlay, setCommentAutoPlay] = useState(true);
+
+  // Lightbox State
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  // Sync state
   useEffect(() => {
     setProject(initialProject);
     setLikes(initialProject.likes || 0);
     setComments(initialProject.comments || []);
   }, [initialProject]);
 
-  // Check local storage for like status
   useEffect(() => {
     const liked = localStorage.getItem(`liked_${project.id}`);
     if (liked) setIsLiked(true);
   }, [project.id]);
+
+  // Lightbox Keyboard Support
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (lightboxIndex === null) return;
+      if (e.key === 'Escape') setLightboxIndex(null);
+      if (e.key === 'ArrowRight') handleNextImageLightbox();
+      if (e.key === 'ArrowLeft') handlePrevImageLightbox();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxIndex, project.gallery]);
 
   const handleLike = async () => {
     if (isLiked) return;
@@ -47,7 +74,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project: initialProject, 
     
     const updatedProject = { ...project, likes: newLikes };
     setProject(updatedProject);
-    onProjectUpdate(updatedProject); // Update global state
+    onProjectUpdate(updatedProject);
 
     try {
         await projectService.likeProject(project.id);
@@ -62,7 +89,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project: initialProject, 
 
     setSubmitStatus('loading');
     
-    // Optimistic Update
     const tempComment: Comment = {
         id: Date.now().toString(),
         author: newCommentAuthor,
@@ -70,7 +96,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project: initialProject, 
         createdAt: new Date().toISOString()
     };
     
-    // Append to list (we reverse it in render)
     const newComments = [...comments, tempComment];
     
     try {
@@ -79,7 +104,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project: initialProject, 
             text: tempComment.text
         });
         
-        // Success
         setComments(updatedProjectServer.comments || newComments);
         setProject(updatedProjectServer);
         onProjectUpdate(updatedProjectServer);
@@ -88,12 +112,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project: initialProject, 
         setNewCommentText('');
         setSubmitStatus('success');
         
-        // Reset status after delay
+        // Move slider to the new comment (which is last)
+        setCommentPage([newComments.length - 1, 1]);
+
         setTimeout(() => setSubmitStatus('idle'), 3000);
         
     } catch (error) {
         console.error("Failed to post comment", error);
-        alert("Failed to post comment. Please try again.");
         setSubmitStatus('idle');
     }
   };
@@ -103,422 +128,593 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project: initialProject, 
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  // Prepare display comments (reversed)
-  const displayComments = comments.slice().reverse();
+  // --- Gallery Slider Logic ---
+  const galleryIndex = wrap(0, project.gallery?.length || 0, galleryPage);
+
+  const paginateGallery = (newDirection: number) => {
+    setGalleryPage([galleryPage + newDirection, newDirection]);
+  };
+
+  // Gallery Auto-play Effect
+  useEffect(() => {
+    if (!project.gallery || project.gallery.length <= 1 || !galleryAutoPlay) return;
+
+    const interval = setInterval(() => {
+        setGalleryPage(([prev]) => [prev + 1, 1]);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [project.gallery, galleryAutoPlay, galleryPage]);
+
+  // --- Comment Slider Logic ---
+  const sortedComments = comments.slice().reverse(); // Newest first
+  const commentIndex = wrap(0, sortedComments.length, commentPage);
+
+  const paginateComments = (newDirection: number) => {
+    setCommentPage([commentPage + newDirection, newDirection]);
+  };
+
+  // Comment Auto-play Effect
+  useEffect(() => {
+    if (sortedComments.length <= 1 || !commentAutoPlay) return;
+
+    const interval = setInterval(() => {
+        setCommentPage(([prev]) => [prev + 1, 1]);
+    }, 4500);
+
+    return () => clearInterval(interval);
+  }, [sortedComments.length, commentAutoPlay, commentPage]);
+
+  // --- Lightbox Logic ---
+  const handleNextImageLightbox = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (lightboxIndex !== null && project.gallery) {
+        setLightboxIndex((prev) => (prev! + 1) % project.gallery!.length);
+    }
+  };
+
+  const handlePrevImageLightbox = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (lightboxIndex !== null && project.gallery) {
+        setLightboxIndex((prev) => (prev! - 1 + project.gallery!.length) % project.gallery!.length);
+    }
+  };
+
+  // --- Animation Variants ---
+  const sliderVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 30 : -30,
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 30 : -30,
+      opacity: 0,
+    })
+  };
+
+  // Text specific variants for the quote
+  const textSliderVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 40 : -40,
+      opacity: 0,
+      filter: 'blur(8px)'
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      filter: 'blur(0px)'
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? 40 : -40,
+      opacity: 0,
+      filter: 'blur(8px)'
+    })
+  };
+
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+    }
+  };
+
+  const itemVariants: Variants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1, 
+      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } 
+    }
+  };
+
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
+  };
 
   return (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen bg-white"
+      className="bg-white min-h-screen"
     >
-      {/* Navigation */}
-      <div className="sticky top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="container mx-auto px-6 md:px-16 py-6 flex justify-between items-center">
-            <button 
-                onClick={onBack}
-                className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors font-medium group"
+      <div className="flex flex-col lg:flex-row min-h-screen">
+        
+        {/* --- LEFT PANEL (Sticky Context) --- */}
+        <div className="lg:w-[40%] lg:h-screen lg:sticky lg:top-0 bg-[#0a0a0a] text-white flex flex-col justify-between p-8 md:p-12 lg:p-16 relative overflow-hidden z-20">
+            {/* Background Texture */}
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black pointer-events-none" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+            {/* Navigation */}
+            <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                className="relative z-10"
             >
-                <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                Back to Projects
-            </button>
-            
-            {/* Header Interaction Stats */}
-             <div className="flex items-center gap-6">
                 <button 
-                    onClick={handleLike}
-                    disabled={isLiked}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
-                        isLiked 
-                        ? 'bg-red-50 border-red-200 text-red-500' 
-                        : 'bg-white border-gray-200 text-gray-500 hover:border-red-300 hover:text-red-500'
-                    }`}
+                    onClick={onBack}
+                    className="group flex items-center gap-3 text-gray-400 hover:text-white transition-colors"
                 >
-                    <Heart size={18} className={isLiked ? 'fill-current' : ''} />
-                    <span className="font-medium">{likes}</span>
-                </button>
-            </div>
-        </div>
-      </div>
-
-      {/* Hero Section */}
-      <div className="container mx-auto px-6 md:px-16 pt-12">
-        <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-        >
-            <span className="text-gray-500 font-medium tracking-wide uppercase text-sm mb-4 block">{project.category}</span>
-            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-12">{project.title}</h1>
-        </motion.div>
-
-        <motion.div
-             initial={{ scale: 0.98, opacity: 0 }}
-             animate={{ scale: 1, opacity: 1 }}
-             transition={{ duration: 0.8, delay: 0.2 }}
-             className="w-full aspect-video bg-gray-100 rounded-none overflow-hidden mb-16 group shadow-sm"
-        >
-            <img 
-                src={project.image} 
-                alt={project.title}
-                onLoad={() => setMainImgLoaded(true)}
-                className={`w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 
-                  ${mainImgLoaded ? 'blur-0 opacity-100' : 'blur-xl opacity-0'}
-                `}
-                loading="lazy"
-                decoding="async"
-            />
-        </motion.div>
-
-        {/* Project Info */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-24">
-            <div className="lg:col-span-4 space-y-8">
-                <div className="border-t border-gray-200 pt-6">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Role</h3>
-                    <p className="text-gray-600">{project.role || 'Designer'}</p>
-                </div>
-                <div className="border-t border-gray-200 pt-6">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Client</h3>
-                    <p className="text-gray-600">{project.client || 'Confidential'}</p>
-                </div>
-                <div className="border-t border-gray-200 pt-6">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Year</h3>
-                    <p className="text-gray-600">{project.year || '2023'}</p>
-                </div>
-            </div>
-
-            <div className="lg:col-span-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">About the project</h2>
-                <p className="text-gray-600 text-lg leading-relaxed mb-8">
-                    {project.description}
-                </p>
-            </div>
-        </div>
-
-        {/* Stacked Gallery Carousel */}
-        {project.gallery && project.gallery.length > 0 && (
-          <div className="pb-32 overflow-hidden">
-             <div className="mb-12">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Gallery</h2>
-                <p className="text-gray-500 text-sm">Swiping stack gallery</p>
-             </div>
-             
-             <StackedCarousel 
-                items={project.gallery}
-                heightClass="h-[250px] md:h-[400px]"
-                cardWidthClass="w-[240px] md:w-[500px]"
-                renderItem={(img) => (
-                    <img 
-                        src={img} 
-                        alt="Gallery" 
-                        className="w-full h-full object-cover rounded-2xl pointer-events-none select-none"
-                    />
-                )}
-             />
-          </div>
-        )}
-
-        {/* Comments Section */}
-        <div className="pb-32">
-            <div className="border-t border-gray-200 pt-16">
-                
-                <div className="max-w-4xl mx-auto mb-16">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-                        Comments <span className="text-gray-400 text-xl font-normal">({comments.length})</span>
-                    </h2>
-                    
-                    {/* Comment Form */}
-                    <div className="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 mb-12">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6">Leave your thought</h3>
-                        <form onSubmit={handleCommentSubmit} className="space-y-4">
-                            <div>
-                                <input 
-                                    type="text" 
-                                    placeholder="Your Name" 
-                                    value={newCommentAuthor}
-                                    onChange={(e) => setNewCommentAuthor(e.target.value)}
-                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <textarea 
-                                    placeholder="What do you think about this project?" 
-                                    value={newCommentText}
-                                    onChange={(e) => setNewCommentText(e.target.value)}
-                                    rows={3}
-                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all resize-none"
-                                    required
-                                />
-                            </div>
-                            <div className="flex justify-end">
-                                <motion.button 
-                                    type="submit" 
-                                    disabled={submitStatus === 'loading'}
-                                    className="bg-black text-white h-12 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-100 min-w-[140px]"
-                                    layout
-                                >
-                                    <AnimatePresence mode="popLayout" initial={false}>
-                                        {submitStatus === 'idle' && (
-                                            <motion.div
-                                                key="idle"
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                transition={{ duration: 0.2 }}
-                                                className="flex items-center gap-2"
-                                            >
-                                                <span>Post</span>
-                                                <Send size={16} />
-                                            </motion.div>
-                                        )}
-                                        {submitStatus === 'loading' && (
-                                            <motion.div
-                                                key="loading"
-                                                initial={{ opacity: 0, scale: 0.5 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                exit={{ opacity: 0, scale: 0.5 }}
-                                                transition={{ duration: 0.2 }}
-                                                className="flex items-center gap-2"
-                                            >
-                                                <span>Posting</span>
-                                                <Loader2 size={16} className="animate-spin" />
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </motion.button>
-                            </div>
-                        </form>
+                    <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-300">
+                        <ArrowLeft size={18} />
                     </div>
-                </div>
+                    <span className="text-sm font-medium tracking-wide uppercase">Back to Projects</span>
+                </button>
+            </motion.div>
 
-                {/* Stacked Comments Carousel */}
-                {comments.length > 0 ? (
-                    <div className="overflow-hidden py-10">
-                         <div className="mb-6 text-center md:text-left container mx-auto px-4 max-w-4xl">
-                            <p className="text-gray-400 text-sm uppercase tracking-widest font-bold">Community Thoughts</p>
+            {/* Main Title Block */}
+            <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="relative z-10 mt-12 lg:mt-0"
+            >
+                <motion.div variants={itemVariants} className="mb-6 flex items-center gap-3">
+                     <span className="px-3 py-1 rounded-full border border-white/20 text-xs font-medium uppercase tracking-wider text-gray-300">
+                        {project.category}
+                     </span>
+                     <span className="h-px w-8 bg-white/20" />
+                     <span className="text-gray-400 text-xs font-mono">{project.year || '2024'}</span>
+                </motion.div>
+
+                <motion.h1 
+                    variants={itemVariants}
+                    className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-medium leading-[0.95] tracking-tight mb-8 lg:mb-12"
+                >
+                    {project.title}
+                </motion.h1>
+
+                {/* Metadata Grid */}
+                <motion.div 
+                    variants={itemVariants}
+                    className="grid grid-cols-2 gap-y-6 gap-x-4 border-t border-white/10 pt-8"
+                >
+                    <div>
+                        <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-2">Role</h3>
+                        <p className="text-base font-light text-gray-200">{project.role || 'UX/UI Design'}</p>
+                    </div>
+                    <div>
+                        <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-2">Client</h3>
+                        <p className="text-base font-light text-gray-200">{project.client || 'Confidential'}</p>
+                    </div>
+                    <div className="col-span-2">
+                         <div className="flex items-center gap-4 mt-2">
+                             <button 
+                                 onClick={handleLike}
+                                 disabled={isLiked}
+                                 className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-300 ${
+                                     isLiked 
+                                     ? 'bg-red-500/20 border-red-500/50 text-red-500' 
+                                     : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white hover:text-black'
+                                 }`}
+                             >
+                                <Heart size={16} className={isLiked ? 'fill-current' : ''} />
+                                <span className="text-sm font-medium">{likes} Likes</span>
+                             </button>
+                             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-gray-300">
+                                <MessageSquare size={16} />
+                                <span className="text-sm font-medium">{comments.length} Comments</span>
+                             </div>
                          </div>
-                         <StackedCarousel
-                            items={displayComments}
-                            autoPlay={true}
-                            interval={3500}
-                            heightClass="h-[250px] md:h-[400px]"
-                            cardWidthClass="w-[240px] md:w-[500px]"
-                            renderItem={(comment) => (
-                                <div className="bg-white border border-gray-200 p-6 md:p-8 rounded-2xl h-full flex flex-col justify-between select-none">
-                                    <div>
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-sm flex-shrink-0">
-                                                {comment.author ? comment.author.charAt(0).toUpperCase() : <User size={18} />}
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-gray-900 text-sm truncate">{comment.author}</h4>
-                                                <span className="text-[10px] text-gray-400 block uppercase tracking-wide">{formatDate(comment.createdAt)}</span>
-                                            </div>
-                                        </div>
-                                        <p className="text-gray-600 text-sm leading-relaxed line-clamp-4 italic">
-                                            "{comment.text}"
-                                        </p>
+                    </div>
+                </motion.div>
+            </motion.div>
+
+            {/* Bottom Decor */}
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className="hidden lg:block relative z-10"
+            >
+                <div className="flex items-center gap-2 text-white/20">
+                    <ArrowDown size={16} className="animate-bounce" />
+                    <span className="text-xs uppercase tracking-widest">Scroll to explore</span>
+                </div>
+            </motion.div>
+        </div>
+
+        {/* --- RIGHT PANEL (Scrollable Content) --- */}
+        <div className="lg:w-[60%] bg-white pb-24 lg:pb-0">
+            
+            {/* Hero Image */}
+            <div className="cursor-zoom-in" onClick={() => setLightboxIndex(0)}>
+                <ParallaxImage src={project.image} alt={project.title} />
+            </div>
+
+            <div className="px-6 py-12 md:p-16 lg:p-20 space-y-16 lg:space-y-24">
+                
+                {/* Description */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8 }}
+                >
+                    <h2 className="text-2xl font-bold mb-6 text-gray-900">The Challenge</h2>
+                    <p className="text-lg md:text-xl text-gray-600 leading-relaxed font-light">
+                        {project.description}
+                    </p>
+                </motion.div>
+
+                {/* --- GALLERY SLIDER --- */}
+                {project.gallery && project.gallery.length > 0 && (
+                    <div className="space-y-8">
+                        <div className="flex items-center justify-between">
+                             <h2 className="text-xl font-bold text-gray-900">Project Gallery</h2>
+                             <div className="flex items-center gap-2 text-xs text-gray-400">
+                                 <ZoomIn size={14} />
+                                 <span>Tap to expand</span>
+                             </div>
+                        </div>
+                        
+                        <div 
+                            className="relative group bg-gray-50 rounded-2xl overflow-hidden aspect-[16/10]"
+                            onMouseEnter={() => setGalleryAutoPlay(false)}
+                            onMouseLeave={() => setGalleryAutoPlay(true)}
+                        >
+                            <AnimatePresence initial={false} custom={galleryDirection} mode="popLayout">
+                                <motion.div
+                                    key={galleryPage}
+                                    custom={galleryDirection}
+                                    variants={{
+                                        enter: (direction: number) => ({
+                                          x: direction > 0 ? '100%' : '-100%',
+                                          opacity: 0,
+                                        }),
+                                        center: {
+                                          zIndex: 1,
+                                          x: 0,
+                                          opacity: 1,
+                                        },
+                                        exit: (direction: number) => ({
+                                          zIndex: 0,
+                                          x: direction < 0 ? '100%' : '-100%',
+                                          opacity: 0,
+                                        })
+                                    }}
+                                    initial="enter"
+                                    animate="center"
+                                    exit="exit"
+                                    transition={{
+                                        x: { type: "spring", stiffness: 300, damping: 30 },
+                                        opacity: { duration: 0.2 }
+                                    }}
+                                    drag="x"
+                                    dragConstraints={{ left: 0, right: 0 }}
+                                    dragElastic={1}
+                                    onDragEnd={(e, { offset, velocity }) => {
+                                        const swipe = swipePower(offset.x, velocity.x);
+                                        if (swipe < -swipeConfidenceThreshold) {
+                                            paginateGallery(1);
+                                        } else if (swipe > swipeConfidenceThreshold) {
+                                            paginateGallery(-1);
+                                        }
+                                    }}
+                                    className="absolute inset-0 cursor-grab active:cursor-grabbing w-full h-full"
+                                    onClick={() => setLightboxIndex(galleryIndex)}
+                                >
+                                    <img 
+                                        src={project.gallery[galleryIndex]} 
+                                        alt="Gallery Slide" 
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                    />
+                                </motion.div>
+                            </AnimatePresence>
+                            
+                            {/* Navigation Arrows */}
+                            {project.gallery.length > 1 && (
+                                <>
+                                    <button className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform z-10" onClick={() => paginateGallery(-1)}>
+                                        <ChevronLeft size={20} />
+                                    </button>
+                                    <button className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform z-10" onClick={() => paginateGallery(1)}>
+                                        <ChevronRight size={20} />
+                                    </button>
+
+                                    {/* Dots */}
+                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                                        {project.gallery.map((_, idx) => (
+                                            <div 
+                                                key={idx}
+                                                className={`w-1.5 h-1.5 rounded-full transition-all ${idx === galleryIndex ? 'bg-white w-4' : 'bg-white/50'}`} 
+                                            />
+                                        ))}
                                     </div>
-                                    <div className="mt-4 flex justify-end">
-                                        <div className="w-8 h-1 bg-gray-100 rounded-full" />
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* --- COMMENTS SECTION --- */}
+                <div className="border-t border-gray-100 pt-16">
+                    <div className="flex items-center gap-3 mb-12">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500">Community Feedback</h2>
+                    </div>
+                    
+                    {/* Modern Input Form */}
+                    <div className="relative mb-20">
+                        <div className="absolute inset-0 bg-gradient-to-r from-gray-50 to-white rounded-3xl transform -rotate-1 scale-[1.02]" />
+                        <div className="relative bg-white/50 backdrop-blur-sm border border-gray-100 rounded-2xl p-8 shadow-sm">
+                            <form onSubmit={handleCommentSubmit} className="space-y-8">
+                                <div className="group">
+                                    <label className="block text-[10px] font-bold tracking-widest text-gray-400 mb-2 group-focus-within:text-black transition-colors uppercase">Your Name</label>
+                                    <input 
+                                        type="text" 
+                                        value={newCommentAuthor}
+                                        onChange={(e) => setNewCommentAuthor(e.target.value)}
+                                        className="w-full text-lg font-medium border-b border-gray-200 py-2 focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                                        placeholder="Enter your name"
+                                    />
+                                </div>
+                                
+                                <div className="group relative">
+                                    <label className="block text-[10px] font-bold tracking-widest text-gray-400 mb-2 group-focus-within:text-black transition-colors uppercase">Your Thoughts</label>
+                                    <textarea 
+                                        value={newCommentText}
+                                        onChange={(e) => setNewCommentText(e.target.value)}
+                                        rows={2}
+                                        className="w-full text-lg font-medium border-b border-gray-200 py-2 focus:outline-none focus:border-black transition-colors bg-transparent resize-none placeholder-gray-300 pr-12 min-h-[60px]"
+                                        placeholder="What do you think about this project?"
+                                    />
+                                    <button 
+                                        type="submit" 
+                                        disabled={submitStatus === 'loading' || !newCommentAuthor || !newCommentText}
+                                        className="absolute right-0 bottom-4 p-3 bg-black text-white rounded-full hover:scale-110 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all shadow-lg z-10"
+                                    >
+                                        {submitStatus === 'loading' ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    {/* Testimonial Style Slider */}
+                    {sortedComments.length > 0 ? (
+                         <div 
+                            className="relative"
+                            onMouseEnter={() => setCommentAutoPlay(false)}
+                            onMouseLeave={() => setCommentAutoPlay(true)}
+                         >
+                            <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
+                                {/* Avatar & Meta Column - Static Layout */}
+                                <div className="shrink-0 flex md:flex-col items-center gap-4 md:w-32">
+                                    
+                                    {/* Avatar - Content Animates Inside */}
+                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-white to-gray-100 border border-gray-200 shadow-md flex items-center justify-center text-2xl font-bold text-gray-900 relative overflow-hidden">
+                                        <AnimatePresence mode="popLayout" custom={commentDirection}>
+                                            <motion.div
+                                                key={commentPage}
+                                                initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.5, y: -10 }}
+                                                transition={{ duration: 0.4, ease: "backOut" }}
+                                                className="absolute inset-0 flex items-center justify-center"
+                                            >
+                                                {sortedComments[commentIndex].author.charAt(0).toUpperCase()}
+                                            </motion.div>
+                                        </AnimatePresence>
                                     </div>
+                                    
+                                    {/* Metadata - Slides Vertically Inside */}
+                                    <div className="text-left md:text-center relative w-32 h-10">
+                                        <AnimatePresence mode="popLayout" custom={commentDirection}>
+                                            <motion.div
+                                                key={commentPage}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -20 }}
+                                                transition={{ duration: 0.4, ease: "easeOut" }}
+                                                className="absolute inset-0 flex flex-col items-center justify-center w-full"
+                                            >
+                                                <div className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-1 truncate w-full text-center">
+                                                    {sortedComments[commentIndex].author}
+                                                </div>
+                                                <div className="text-[10px] text-gray-400 font-mono">
+                                                    {formatDate(sortedComments[commentIndex].createdAt)}
+                                                </div>
+                                            </motion.div>
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
+
+                                {/* Quote Content - Text Slides Horizontally */}
+                                <div className="flex-1 relative pl-6 md:pl-12 border-l-2 border-gray-100 py-2 min-h-[120px] flex items-center overflow-hidden">
+                                    <Quote size={64} className="absolute -top-6 -left-4 text-gray-100/50 -z-10 transform -scale-x-100" />
+                                    <div className="relative w-full">
+                                        <AnimatePresence mode="wait" custom={commentDirection}>
+                                            <motion.p
+                                                key={commentPage}
+                                                custom={commentDirection}
+                                                variants={textSliderVariants}
+                                                initial="enter"
+                                                animate="center"
+                                                exit="exit"
+                                                transition={{ duration: 0.5, ease: "circOut" }}
+                                                className="text-2xl md:text-3xl font-light leading-relaxed text-gray-800 italic"
+                                            >
+                                                "{sortedComments[commentIndex].text}"
+                                            </motion.p>
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Slider Navigation & Progress */}
+                            {sortedComments.length > 1 && (
+                                <div className="flex items-center justify-end gap-6 mt-12">
+                                    <button 
+                                        onClick={() => paginateComments(-1)}
+                                        className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-black hover:text-white hover:border-black transition-all"
+                                    >
+                                        <ChevronLeft size={18} />
+                                    </button>
+                                    
+                                    <div className="w-24 h-1 bg-gray-100 rounded-full overflow-hidden">
+                                        <motion.div 
+                                            className="h-full bg-black"
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${((commentIndex + 1) / sortedComments.length) * 100}%` }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                    </div>
+
+                                    <button 
+                                        onClick={() => paginateComments(1)}
+                                        className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-black hover:text-white hover:border-black transition-all"
+                                    >
+                                        <ChevronRight size={18} />
+                                    </button>
                                 </div>
                             )}
-                         />
-                    </div>
-                ) : (
-                    <p className="text-gray-500 text-center italic py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200 max-w-2xl mx-auto">
-                        No comments yet. Be the first to share your thoughts!
-                    </p>
-                )}
+                         </div>
+                    ) : (
+                        <div className="text-center py-20 bg-gray-50/30 rounded-3xl border border-dashed border-gray-200">
+                             <MessageSquare size={32} className="mx-auto text-gray-300 mb-4" />
+                             <p className="text-gray-400 font-light">No feedback yet. Be the first to share your thoughts.</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer Link */}
+                <div className="py-24 flex justify-center border-t border-gray-100 mt-20">
+                    <button onClick={onBack} className="group flex flex-col items-center gap-4 text-gray-400 hover:text-black transition-colors">
+                        <div className="w-16 h-16 rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-black group-hover:text-white group-hover:border-black transition-all">
+                            <ArrowUpRight size={24} />
+                        </div>
+                        <span className="font-medium tracking-wide uppercase">View All Projects</span>
+                    </button>
+                </div>
             </div>
         </div>
-
       </div>
       
-      <Contact />
-      <Footer />
-    </motion.div>
-  );
-};
-
-// --- Generic Stacked Carousel Component ---
-
-interface StackedCarouselProps<T> {
-  items: T[];
-  renderItem: (item: T) => React.ReactNode;
-  autoPlay?: boolean;
-  interval?: number;
-  heightClass?: string;
-  cardWidthClass?: string;
-}
-
-const StackedCarousel = <T,>({ 
-    items, 
-    renderItem, 
-    autoPlay = true, 
-    interval = 3000,
-    heightClass = "h-[400px]",
-    cardWidthClass = "w-[300px] md:w-[500px]"
-}: StackedCarouselProps<T>) => {
-    const [index, setIndex] = useState(0);
-    const [isHovered, setIsHovered] = useState(false);
-
-    // Memoize nextImage to avoid dependency cycles
-    const nextImage = useCallback(() => {
-        setIndex((prev) => (prev + 1) % items.length);
-    }, [items.length]);
-
-    const prevImage = useCallback(() => {
-        setIndex((prev) => (prev - 1 + items.length) % items.length);
-    }, [items.length]);
-
-    // Auto-slide effect
-    useEffect(() => {
-        if (!autoPlay || isHovered || items.length <= 1) return;
-        const timer = setInterval(() => {
-            nextImage();
-        }, interval);
-        return () => clearInterval(timer);
-    }, [autoPlay, interval, isHovered, items.length, nextImage]);
-
-    const handleDragEnd = (_: any, info: any) => {
-        if (info.offset.x < -50) {
-            nextImage();
-        } else if (info.offset.x > 50) {
-            prevImage();
-        }
-    };
-
-    // Calculate card styles based on circular distance
-    const getCardStyle = (itemIndex: number) => {
-        const length = items.length;
-        // Calculate shortest distance in a circle
-        let diff = itemIndex - index;
-        if (diff > length / 2) diff -= length;
-        if (diff < -length / 2) diff += length;
-
-        const isCenter = diff === 0;
-        const absDiff = Math.abs(diff);
-        
-        // Only render active + 1 neighbor on each side + 1 buffer (total 5 visible max)
-        const isVisible = absDiff <= 2; 
-
-        // Scale & Z-Index
-        // Center: 1, Neighbors: 0.9, Far: 0.8
-        const scale = 1 - (absDiff * 0.1); 
-        const zIndex = 10 - absDiff;
-        
-        // Opacity
-        const opacity = isVisible ? (1 - absDiff * 0.3) : 0;
-        
-        // X Position (Overlap Logic)
-        // Adjust overlap percentage based on screen size via CSS classes logic or fixed here
-        // We use percentage of 100% (where 100% is card width)
-        // 15% overlap for neighbors
-        const xPercent = diff * 15; 
-
-        return {
-            x: `${xPercent}%`,
-            scale,
-            zIndex,
-            opacity,
-            display: isVisible ? 'block' : 'none',
-        };
-    };
-
-    if (!items || items.length === 0) return null;
-
-    // If single item, render static
-    if (items.length === 1) {
-        return (
-            <div className={`relative w-full flex items-center justify-center ${heightClass}`}>
-                 <div className={`relative ${cardWidthClass} h-full`}>
-                    {renderItem(items[0])}
-                 </div>
-            </div>
-        );
-    }
-
-    return (
-        <div 
-            className={`relative w-full flex items-center justify-center perspective-1000 ${heightClass}`}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            onTouchStart={() => setIsHovered(true)}
-            onTouchEnd={() => setIsHovered(false)}
-        >
-            {/* Cards Container */}
-            <div className={`relative ${cardWidthClass} h-full flex items-center justify-center`}>
-                <AnimatePresence initial={false} mode="popLayout">
-                    {items.map((item, i) => {
-                        const style = getCardStyle(i);
-                        return (
-                            <motion.div
-                                key={i}
-                                className="absolute w-full h-full origin-center cursor-grab active:cursor-grabbing will-change-transform"
-                                animate={{
-                                    x: style.x,
-                                    scale: style.scale,
-                                    zIndex: style.zIndex,
-                                    opacity: style.opacity,
-                                    display: style.display,
-                                }}
-                                transition={{
-                                    type: "spring",
-                                    stiffness: 300,
-                                    damping: 30
-                                }}
-                                drag="x"
-                                dragConstraints={{ left: 0, right: 0 }}
-                                dragElastic={0.05}
-                                onDragEnd={handleDragEnd}
-                                onClick={() => {
-                                    if (i !== index) setIndex(i);
-                                }}
-                            >
-                                <div className="w-full h-full relative bg-white rounded-2xl overflow-hidden border border-gray-100">
-                                    {renderItem(item)}
-                                    
-                                    {/* Overlay for non-active cards to simulate depth */}
-                                    {i !== index && (
-                                        <div className="absolute inset-0 bg-white/70 transition-colors pointer-events-none rounded-2xl" />
-                                    )}
-                                </div>
-                            </motion.div>
-                        );
-                    })}
-                </AnimatePresence>
-            </div>
-
-            {/* Navigation Buttons (Desktop) */}
-            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-20 pointer-events-none">
+      {/* --- LIGHTBOX MODAL --- */}
+      <AnimatePresence>
+        {lightboxIndex !== null && project.gallery && (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center"
+                onClick={() => setLightboxIndex(null)}
+            >
+                {/* Close Button */}
                 <button 
-                    onClick={prevImage}
-                    className="pointer-events-auto w-10 h-10 md:w-12 md:h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-transform text-gray-800 border border-gray-100"
+                    onClick={() => setLightboxIndex(null)}
+                    className="absolute top-6 right-6 p-2 bg-white/10 text-white rounded-full hover:bg-white/20 transition-colors z-20"
+                >
+                    <X size={24} />
+                </button>
+
+                {/* Image Counter */}
+                <div className="absolute top-6 left-6 text-white/50 text-sm font-mono z-20">
+                    {lightboxIndex + 1} / {project.gallery.length}
+                </div>
+
+                {/* Navigation Buttons */}
+                <button 
+                    className="absolute left-4 md:left-8 p-3 bg-black/50 text-white rounded-full hover:bg-black/80 transition-all z-20 hidden md:flex items-center justify-center"
+                    onClick={handlePrevImageLightbox}
                 >
                     <ChevronLeft size={24} />
                 </button>
                 <button 
-                    onClick={nextImage}
-                    className="pointer-events-auto w-10 h-10 md:w-12 md:h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-transform text-gray-800 border border-gray-100"
+                    className="absolute right-4 md:right-8 p-3 bg-black/50 text-white rounded-full hover:bg-black/80 transition-all z-20 hidden md:flex items-center justify-center"
+                    onClick={handleNextImageLightbox}
                 >
                     <ChevronRight size={24} />
                 </button>
-            </div>
 
-            {/* Pagination Dots */}
-            <div className="absolute -bottom-6 flex gap-2 justify-center">
-                {items.map((_, i) => (
-                    <button 
-                        key={i} 
-                        onClick={() => setIndex(i)}
-                        className={`h-1.5 rounded-full transition-all duration-300 ${i === index ? 'bg-black w-6' : 'bg-gray-300 w-1.5 hover:bg-gray-400'}`}
+                {/* Main Image */}
+                <motion.div 
+                    key={lightboxIndex}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="w-full h-full max-w-7xl max-h-screen p-4 md:p-12 flex items-center justify-center"
+                    onClick={(e) => e.stopPropagation()} // Prevent close when clicking image
+                >
+                    <img 
+                        src={project.gallery[lightboxIndex]} 
+                        alt="Full Screen" 
+                        className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                     />
-                ))}
-            </div>
+                </motion.div>
+                
+                {/* Mobile Hint */}
+                <div className="absolute bottom-8 left-0 right-0 text-center text-white/30 text-xs md:hidden">
+                    Tap outside to close • Swipe to navigate
+                </div>
+            </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="bg-white">
+        <Contact />
+        <Footer />
+      </div>
+    </motion.div>
+  );
+};
+
+// Sub-component for Image with reveal effect
+const ParallaxImage = ({ src, alt }: { src: string; alt: string }) => {
+    const { scrollYProgress } = useScroll();
+    const scale = useTransform(scrollYProgress, [0, 1], [1.1, 1]);
+    const [loaded, setLoaded] = useState(false);
+
+    return (
+        <div className="w-full h-[50vh] md:h-[60vh] lg:h-[80vh] overflow-hidden bg-gray-100 relative group">
+             <motion.div style={{ scale }} className="w-full h-full">
+                <img 
+                    src={src} 
+                    alt={alt}
+                    onLoad={() => setLoaded(true)}
+                    className={`w-full h-full object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+                />
+             </motion.div>
+             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+                    <ZoomIn size={16} />
+                    <span className="text-xs font-bold uppercase tracking-wider">View Fullscreen</span>
+                </div>
+             </div>
         </div>
     );
 };

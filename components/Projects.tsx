@@ -41,7 +41,7 @@ const Projects: React.FC<ProjectsProps> = ({ projects, onProjectSelect, onProjec
       <div className="container mx-auto px-6 md:px-16 max-w-[1400px]">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start mb-16 gap-6">
           <motion.h2 
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}

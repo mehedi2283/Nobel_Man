@@ -260,7 +260,7 @@ const ChatWidget: React.FC = () => {
                 </button>
               </div>
               <div className="text-center mt-2">
-                <span className="text-[10px] text-gray-400">Powered by n8n & Gemini</span>
+                <span className="text-[10px] text-gray-400">Powered by P4KB0Y</span>
               </div>
             </div>
           </motion.div>
