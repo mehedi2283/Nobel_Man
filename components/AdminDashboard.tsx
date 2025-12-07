@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, Reorder, useMotionValue, useSpring } from 'framer-motion';
-import { LogOut, Plus, Save, Trash2, LayoutGrid, X, Edit2, MessageCircle, Heart, MessageSquare, Briefcase, User, Mail, Link as LinkIcon, Globe, Instagram, Linkedin, AlignLeft, Check, Loader2, AlertCircle, Home, LayoutDashboard, Key, Shield, Calendar, Sparkles, Filter, CheckSquare, Square, CornerDownRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LogOut, Plus, Save, Trash2, LayoutGrid, X, Edit2, MessageCircle, Heart, MessageSquare, Briefcase, User, Mail, Link as LinkIcon, Globe, Instagram, Linkedin, AlignLeft, Check, Loader2, AlertCircle, Home, LayoutDashboard, Key, Shield, Calendar, Sparkles, Filter, CheckSquare, Square, CornerDownRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import { Project, ClientLogo, ProfileData, ContactMessage, Comment, ChatLog } from '../types';
 import { projectService } from '../services/projectService';
 import { DEFAULT_PROFILE_DATA } from '../constants';
@@ -712,7 +712,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
       <div className="container mx-auto px-6 py-8 flex-1 pb-24 md:pb-8">
         <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Sidebar - Desktop Only */}
-            <div className="hidden md:flex w-64 flex-col gap-2 shrink-0">
+            <div className="hidden md:flex w-64 flex-col gap-2 shrink-0 sticky top-24">
                 <button 
                     onClick={() => { setActiveTab('overview'); resetForm(); }}
                     className={getTabClass('overview')}
@@ -765,569 +765,98 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
             <div className="flex-1 w-full min-w-0">
                 <AnimatePresence mode="wait">
                     
+                    {/* ... (Other Tabs: Overview, Inbox, List, Form, Logos) ... */}
                     {activeTab === 'overview' && (
-                        <motion.div 
-                            key="overview"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 20 }}
-                            className="space-y-8"
-                        >
-                           {/* Stats Cards */}
+                        <motion.div key="overview" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-8">
                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                               <StatCard 
-                                 title="Total Likes" 
-                                 value={stats.totalLikes} 
-                                 icon={<Heart size={20} className="text-red-500" />} 
-                               />
-                               <StatCard 
-                                 title="Total Comments" 
-                                 value={stats.totalComments} 
-                                 icon={<MessageCircle size={20} className="text-blue-500" />} 
-                               />
-                               <StatCard 
-                                 title="Total Messages" 
-                                 value={messages.length + chatLogs.length} 
-                                 icon={<Mail size={20} className="text-purple-500" />} 
-                               />
-                               <StatCard 
-                                 title="Total Projects" 
-                                 value={projects.length} 
-                                 icon={<LayoutGrid size={20} className="text-black" />} 
-                               />
+                               <StatCard title="Total Likes" value={stats.totalLikes} icon={<Heart size={20} className="text-red-500" />} />
+                               <StatCard title="Total Comments" value={stats.totalComments} icon={<MessageCircle size={20} className="text-blue-500" />} />
+                               <StatCard title="Total Messages" value={messages.length + chatLogs.length} icon={<Mail size={20} className="text-purple-500" />} />
+                               <StatCard title="Total Projects" value={projects.length} icon={<LayoutGrid size={20} className="text-black" />} />
                            </div>
-                           
-                           {/* Recent Activity Feed */}
                            <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm">
-                               <div className="flex items-center gap-3 mb-8">
-                                   <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white">
-                                       <Sparkles size={20} />
-                                   </div>
-                                   <div>
-                                       <h3 className="text-lg font-bold text-gray-900">Recent Activity</h3>
-                                       <p className="text-sm text-gray-500">Latest comments and incoming messages</p>
-                                   </div>
-                               </div>
-
+                               <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white"><Sparkles size={20} /></div><div><h3 className="text-lg font-bold text-gray-900">Recent Activity</h3><p className="text-sm text-gray-500">Latest comments and incoming messages</p></div></div>
                                <div className="space-y-6">
                                    {recentActivity.length > 0 ? (
                                        recentActivity.map((item) => (
                                            <div key={item.id} className="flex gap-4 items-start group">
-                                               <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border transition-colors ${
-                                                   item.type === 'comment' 
-                                                   ? 'bg-blue-50 text-blue-600 border-blue-100 group-hover:border-blue-200 group-hover:bg-blue-100' 
-                                                   : 'bg-purple-50 text-purple-600 border-purple-100 group-hover:border-purple-200 group-hover:bg-purple-100'
-                                               }`}>
-                                                   {item.type === 'comment' ? <MessageCircle size={18} /> : <Mail size={18} />}
-                                               </div>
-                                               <div className="flex-1 min-w-0">
-                                                   <div className="flex justify-between items-start mb-1">
-                                                       <h4 className="font-bold text-gray-900 text-sm">{item.author}</h4>
-                                                       <span className="text-xs text-gray-400 font-mono">{item.date.toLocaleDateString()}</span>
-                                                   </div>
-                                                   <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1">
-                                                       {item.type === 'comment' ? <MessageCircle size={12}/> : <Mail size={12}/>}
-                                                       {item.subtext}
-                                                   </p>
-                                                   <div className="bg-gray-50 p-4 rounded-xl text-sm text-gray-600 group-hover:bg-gray-100 transition-colors leading-relaxed">
-                                                       {item.text}
-                                                   </div>
-                                               </div>
+                                               <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border transition-colors ${item.type === 'comment' ? 'bg-blue-50 text-blue-600 border-blue-100 group-hover:border-blue-200 group-hover:bg-blue-100' : 'bg-purple-50 text-purple-600 border-purple-100 group-hover:border-purple-200 group-hover:bg-purple-100'}`}>{item.type === 'comment' ? <MessageCircle size={18} /> : <Mail size={18} />}</div>
+                                               <div className="flex-1 min-w-0"><div className="flex justify-between items-start mb-1"><h4 className="font-bold text-gray-900 text-sm">{item.author}</h4><span className="text-xs text-gray-400 font-mono">{item.date.toLocaleDateString()}</span></div><p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1">{item.type === 'comment' ? <MessageCircle size={12}/> : <Mail size={12}/>}{item.subtext}</p><div className="bg-gray-50 p-4 rounded-xl text-sm text-gray-600 group-hover:bg-gray-100 transition-colors leading-relaxed">{item.text}</div></div>
                                            </div>
                                        ))
-                                   ) : (
-                                       <div className="text-center py-12 text-gray-400">
-                                           <p>No recent activity found.</p>
-                                       </div>
-                                   )}
+                                   ) : (<div className="text-center py-12 text-gray-400"><p>No recent activity found.</p></div>)}
                                </div>
                            </div>
                         </motion.div>
                     )}
 
                     {activeTab === 'inbox' && (
-                        <motion.div 
-                            key="inbox"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 max-w-4xl mx-auto flex flex-col min-h-[600px]"
-                        >
-                           {/* ... Inbox Header ... */}
+                        <motion.div key="inbox" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 max-w-4xl mx-auto flex flex-col min-h-[600px]">
                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                                    Inbox
-                                    <span className="text-sm font-normal text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                                        {processedInboxData.length} items
-                                    </span>
-                                </h2>
+                                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">Inbox<span className="text-sm font-normal text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{processedInboxData.length} items</span></h2>
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                    {/* Animated Tabs */}
-                                    <div className="bg-gray-100 p-1 rounded-2xl flex items-center relative gap-1">
-                                        <button 
-                                            onClick={() => setInboxTab('contact')} 
-                                            className={`relative flex-1 px-8 py-2 text-sm font-bold transition-colors z-10 rounded-xl whitespace-nowrap min-w-[120px] ${inboxTab === 'contact' ? 'text-black' : 'text-gray-500'}`}
-                                        >
-                                            Contact Form
-                                            {inboxTab === 'contact' && (
-                                                <motion.div 
-                                                    layoutId="inbox-tab" 
-                                                    className="absolute inset-0 bg-white rounded-xl shadow-sm -z-10 border border-black/5" 
-                                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} 
-                                                />
-                                            )}
-                                        </button>
-                                        <button 
-                                            onClick={() => setInboxTab('chat')} 
-                                            className={`relative flex-1 px-8 py-2 text-sm font-bold transition-colors z-10 rounded-xl whitespace-nowrap min-w-[120px] ${inboxTab === 'chat' ? 'text-black' : 'text-gray-500'}`}
-                                        >
-                                            Chatbot
-                                            {inboxTab === 'chat' && (
-                                                <motion.div 
-                                                    layoutId="inbox-tab" 
-                                                    className="absolute inset-0 bg-white rounded-xl shadow-sm -z-10 border border-black/5" 
-                                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} 
-                                                />
-                                            )}
-                                        </button>
-                                    </div>
-
-                                    {/* Date Filter & Custom Calendar */}
-                                    <div className="relative">
-                                        <button 
-                                            className={`relative cursor-pointer border rounded-2xl px-5 py-2 flex items-center gap-3 transition-all h-[40px] ${dateFilter ? 'bg-black text-white border-black' : 'bg-white border-gray-200 hover:border-gray-400 text-gray-600'}`}
-                                            onClick={() => setShowDatePicker(!showDatePicker)}
-                                        >
-                                            <Filter size={14} className={dateFilter ? "text-white" : "text-gray-400"} />
-                                            <span className="text-sm font-medium">{dateFilter ? new Date(dateFilter).toLocaleDateString() : 'Filter by Date'}</span>
-                                            {dateFilter && (
-                                                <span 
-                                                    onClick={(e) => { 
-                                                        e.stopPropagation(); 
-                                                        setDateFilter(''); 
-                                                    }} 
-                                                    className="ml-2 w-5 h-5 bg-white text-black rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
-                                                >
-                                                    <X size={12} />
-                                                </span>
-                                            )}
-                                        </button>
-
-                                        {/* Custom Calendar Dropdown */}
-                                        <AnimatePresence>
-                                            {showDatePicker && (
-                                                <motion.div 
-                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                    className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 p-4 z-50 w-72"
-                                                >
-                                                    {/* Calendar Header */}
-                                                    <div className="flex items-center justify-between mb-4 px-2">
-                                                        <button onClick={handlePrevMonth} className="p-1 hover:bg-gray-100 rounded-full"><ChevronLeft size={18}/></button>
-                                                        <span className="font-bold text-gray-900">
-                                                            {calendarMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                                                        </span>
-                                                        <button onClick={handleNextMonth} className="p-1 hover:bg-gray-100 rounded-full"><ChevronRight size={18}/></button>
-                                                    </div>
-                                                    
-                                                    {/* Weekdays */}
-                                                    <div className="grid grid-cols-7 gap-1 mb-2 text-center">
-                                                        {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
-                                                            <div key={d} className="text-[10px] font-bold text-gray-400 uppercase">{d}</div>
-                                                        ))}
-                                                    </div>
-
-                                                    {/* Days */}
-                                                    <div className="grid grid-cols-7 gap-1 place-items-center">
-                                                        {renderCalendar()}
-                                                    </div>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
+                                    <div className="bg-gray-100 p-1 rounded-2xl flex items-center relative gap-1"><button onClick={() => setInboxTab('contact')} className={`relative flex-1 px-8 py-2 text-sm font-bold transition-colors z-10 rounded-xl whitespace-nowrap min-w-[120px] ${inboxTab === 'contact' ? 'text-black' : 'text-gray-500'}`}>Contact Form{inboxTab === 'contact' && (<motion.div layoutId="inbox-tab" className="absolute inset-0 bg-white rounded-xl shadow-sm -z-10 border border-black/5" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />)}</button><button onClick={() => setInboxTab('chat')} className={`relative flex-1 px-8 py-2 text-sm font-bold transition-colors z-10 rounded-xl whitespace-nowrap min-w-[120px] ${inboxTab === 'chat' ? 'text-black' : 'text-gray-500'}`}>Chatbot{inboxTab === 'chat' && (<motion.div layoutId="inbox-tab" className="absolute inset-0 bg-white rounded-xl shadow-sm -z-10 border border-black/5" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />)}</button></div>
+                                    <div className="relative"><button className={`relative cursor-pointer border rounded-2xl px-5 py-2 flex items-center gap-3 transition-all h-[40px] ${dateFilter ? 'bg-black text-white border-black' : 'bg-white border-gray-200 hover:border-gray-400 text-gray-600'}`} onClick={() => setShowDatePicker(!showDatePicker)}><Filter size={14} className={dateFilter ? "text-white" : "text-gray-400"} /><span className="text-sm font-medium">{dateFilter ? new Date(dateFilter).toLocaleDateString() : 'Filter by Date'}</span>{dateFilter && (<span onClick={(e) => { e.stopPropagation(); setDateFilter(''); }} className="ml-2 w-5 h-5 bg-white text-black rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"><X size={12} /></span>)}</button><AnimatePresence>{showDatePicker && (<motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 p-4 z-50 w-72"><div className="flex items-center justify-between mb-4 px-2"><button onClick={handlePrevMonth} className="p-1 hover:bg-gray-100 rounded-full"><ChevronLeft size={18}/></button><span className="font-bold text-gray-900">{calendarMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}</span><button onClick={handleNextMonth} className="p-1 hover:bg-gray-100 rounded-full"><ChevronRight size={18}/></button></div><div className="grid grid-cols-7 gap-1 mb-2 text-center">{['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (<div key={d} className="text-[10px] font-bold text-gray-400 uppercase">{d}</div>))}</div><div className="grid grid-cols-7 gap-1 place-items-center">{renderCalendar()}</div></motion.div>)}</AnimatePresence></div>
                                 </div>
                            </div>
-                           
-                           {/* ... List Content (Flexible Area) ... */}
                            <div className="flex-1">
-                                {Object.keys(groupedInbox).length === 0 ? (
-                                    <div className="text-center py-20 text-gray-400 flex flex-col items-center"><Mail size={64} className="mb-4 opacity-10" /><p>No messages found {dateFilter ? 'for this date' : 'in inbox'}.</p></div>
-                                ) : (
-                                    <AnimatePresence mode="wait">
-                                        <motion.div 
-                                            key={`${inboxTab}-${inboxPage}`}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            transition={{ duration: 0.3 }}
-                                            className="space-y-8"
-                                        >
-                                            {Object.entries(groupedInbox).map(([date, items]) => (
-                                                <div key={date}>
-                                                    <div className="flex items-center gap-4 mb-4">
-                                                        <div className="h-[1px] bg-gray-200 flex-1"></div><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400"><Calendar size={14} /> {date}</div><div className="h-[1px] bg-gray-200 flex-1"></div>
-                                                    </div>
-                                                    <div className="space-y-4">
-                                                        {(items as any[]).map((item: any, idx: number) => (
-                                                            <div key={`${item.id}-${idx}`}>
-                                                                {item.email ? (
-                                                                    // --- Contact Form Message Render ---
-                                                                    <div className="p-5 rounded-2xl border hover:shadow-md transition-all relative group bg-blue-50/30 border-blue-100">
-                                                                        {/* Mobile Absolute Delete Button - Moved to outer container for clearer positioning */}
-                                                                        <button 
-                                                                            onClick={(e) => { e.stopPropagation(); setMessageToDelete(item._id || item.id); }} 
-                                                                            className="md:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 active:bg-red-50 rounded-full transition-all z-10"
-                                                                        >
-                                                                            <Trash2 size={18} />
-                                                                        </button>
-
-                                                                        {/* Header Row - Added pr-12 to push timestamp away from absolute button */}
-                                                                        <div className="flex justify-between items-start mb-3 pr-12 md:pr-0 relative">
-                                                                            <div className="flex items-center gap-3 overflow-hidden">
-                                                                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0"><Mail size={20} /></div>
-                                                                                <div className="min-w-0 flex-1">
-                                                                                    <h3 className="font-bold text-gray-900 truncate pr-2">{item.name}</h3>
-                                                                                    <a href={`mailto:${item.email}`} className="text-xs text-blue-600 hover:underline truncate block">{item.email}</a>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div className="flex items-center gap-4 shrink-0">
-                                                                                <span className="text-xs text-gray-400 font-mono whitespace-nowrap">{new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                                                                {/* Desktop Delete Button (Hidden on Mobile) */}
-                                                                                <button onClick={(e) => { e.stopPropagation(); setMessageToDelete(item._id || item.id); }} className="hidden md:block p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all -mr-2" title="Delete Message"><Trash2 size={18} /></button>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div className="pl-0 md:pl-13 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{item.message}</div>
-                                                                    </div>
-                                                                ) : (
-                                                                    // --- Chat Conversation Pair Render ---
-                                                                    <div className="bg-gray-50 rounded-2xl border border-gray-200 p-5 space-y-4">
-                                                                        {/* Header Info */}
-                                                                        <div className="flex justify-between items-center text-xs text-gray-400 mb-2 px-2">
-                                                                            <span className="uppercase font-bold tracking-wider">Conversation Log</span>
-                                                                            <span className="font-mono">{new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                                                        </div>
-
-                                                                        {/* User Message (Right/Top) */}
-                                                                        {item.userMsg && (
-                                                                            <div className="flex justify-end mb-2">
-                                                                                <div className="flex items-end gap-2 max-w-[85%] flex-row-reverse">
-                                                                                    <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center shrink-0">
-                                                                                        <User size={14} />
-                                                                                    </div>
-                                                                                    <div className="bg-white border border-gray-200 px-4 py-2 rounded-2xl rounded-tr-sm shadow-sm text-sm text-gray-800">
-                                                                                        {item.userMsg.text}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        )}
-
-                                                                        {/* Connection Line */}
-                                                                        {item.userMsg && item.modelMsg && (
-                                                                            <div className="flex justify-start pl-10 -my-1 opacity-20">
-                                                                                <CornerDownRight size={16} />
-                                                                            </div>
-                                                                        )}
-
-                                                                        {/* AI Response (Left/Bottom) */}
-                                                                        {item.modelMsg && (
-                                                                            <div className="flex justify-start">
-                                                                                <div className="flex items-start gap-2 max-w-[85%]">
-                                                                                    <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-1">
-                                                                                        <Sparkles size={14} />
-                                                                                    </div>
-                                                                                    <div className="bg-white border border-purple-100 px-4 py-2 rounded-2xl rounded-tl-sm shadow-sm text-sm text-gray-700">
-                                                                                        {item.modelMsg.text}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </motion.div>
-                                    </AnimatePresence>
-                                )}
+                                {Object.keys(groupedInbox).length === 0 ? (<div className="text-center py-20 text-gray-400 flex flex-col items-center"><Mail size={64} className="mb-4 opacity-10" /><p>No messages found {dateFilter ? 'for this date' : 'in inbox'}.</p></div>) : (<AnimatePresence mode="wait"><motion.div key={`${inboxTab}-${inboxPage}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="space-y-8">{Object.entries(groupedInbox).map(([date, items]) => (<div key={date}><div className="flex items-center gap-4 mb-4"><div className="h-[1px] bg-gray-200 flex-1"></div><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400"><Calendar size={14} /> {date}</div><div className="h-[1px] bg-gray-200 flex-1"></div></div><div className="space-y-4">{(items as any[]).map((item: any, idx: number) => (<div key={`${item.id}-${idx}`}>{item.email ? (<div className="p-5 rounded-2xl border hover:shadow-md transition-all relative group bg-blue-50/30 border-blue-100"><button onClick={(e) => { e.stopPropagation(); setMessageToDelete(item._id || item.id); }} className="md:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 active:bg-red-50 rounded-full transition-all z-10"><Trash2 size={18} /></button><div className="flex justify-between items-start mb-3 pr-12 md:pr-0 relative"><div className="flex items-center gap-3 overflow-hidden"><div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0"><Mail size={20} /></div><div className="min-w-0 flex-1"><h3 className="font-bold text-gray-900 truncate pr-2">{item.name}</h3><a href={`mailto:${item.email}`} className="text-xs text-blue-600 hover:underline truncate block">{item.email}</a></div></div><div className="flex items-center gap-4 shrink-0"><span className="text-xs text-gray-400 font-mono whitespace-nowrap">{new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span><button onClick={(e) => { e.stopPropagation(); setMessageToDelete(item._id || item.id); }} className="hidden md:block p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all -mr-2" title="Delete Message"><Trash2 size={18} /></button></div></div><ExpandableMessage text={item.message} /></div>) : (<div className="bg-gray-50 rounded-2xl border border-gray-200 p-5 space-y-4"><div className="flex justify-between items-center text-xs text-gray-400 mb-2 px-2"><span className="uppercase font-bold tracking-wider">Conversation Log</span><span className="font-mono">{new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span></div>{item.userMsg && (<div className="flex justify-end mb-2"><div className="flex items-end gap-2 max-w-[85%] flex-row-reverse"><div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center shrink-0"><User size={14} /></div><div className="bg-white border border-gray-200 px-4 py-2 rounded-2xl rounded-tr-sm shadow-sm text-sm text-gray-800">{item.userMsg.text}</div></div></div>)}{item.userMsg && item.modelMsg && (<div className="flex justify-start pl-10 -my-1 opacity-20"><CornerDownRight size={16} /></div>)}{item.modelMsg && (<div className="flex justify-start"><div className="flex items-start gap-2 max-w-[85%]"><div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-1"><Sparkles size={14} /></div><div className="bg-white border border-purple-100 px-4 py-2 rounded-2xl rounded-tl-sm shadow-sm text-sm text-gray-700">{item.modelMsg.text}</div></div></div>)}</div>)}</div>))}</div></div>))} </motion.div></AnimatePresence>)}
                            </div>
-
-                           {/* --- Pagination Controls --- */}
-                           {totalInboxPages > 1 && (
-                                <div className="mt-8 border-t border-gray-100 pt-6 flex justify-between items-center">
-                                    <span className="text-xs font-medium text-gray-400">
-                                        Showing {((inboxPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(inboxPage * ITEMS_PER_PAGE, processedInboxData.length)} of {processedInboxData.length}
-                                    </span>
-                                    <div className="flex items-center gap-2">
-                                        <button 
-                                            onClick={() => setInboxPage(p => Math.max(1, p - 1))}
-                                            disabled={inboxPage === 1}
-                                            className="p-2 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 transition-colors"
-                                        >
-                                            <ChevronLeft size={16} />
-                                        </button>
-                                        
-                                        <span className="text-sm font-bold text-gray-900 px-2 min-w-[60px] text-center">
-                                            {inboxPage} / {totalInboxPages}
-                                        </span>
-
-                                        <button 
-                                            onClick={() => setInboxPage(p => Math.min(totalInboxPages, p + 1))}
-                                            disabled={inboxPage === totalInboxPages}
-                                            className="p-2 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 transition-colors"
-                                        >
-                                            <ChevronRight size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                           )}
+                           {totalInboxPages > 1 && (<div className="mt-8 border-t border-gray-100 pt-6 flex justify-between items-center"><span className="text-xs font-medium text-gray-400">Showing {((inboxPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(inboxPage * ITEMS_PER_PAGE, processedInboxData.length)} of {processedInboxData.length}</span><div className="flex items-center gap-2"><button onClick={() => setInboxPage(p => Math.max(1, p - 1))} disabled={inboxPage === 1} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 transition-colors"><ChevronLeft size={16} /></button><span className="text-sm font-bold text-gray-900 px-2 min-w-[60px] text-center">{inboxPage} / {totalInboxPages}</span><button onClick={() => setInboxPage(p => Math.min(totalInboxPages, p + 1))} disabled={inboxPage === totalInboxPages} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 transition-colors"><ChevronRight size={16} /></button></div></div>)}
                         </motion.div>
                     )}
                     
-                    {/* ... (Projects List & Form Tabs) ... */}
-                     {activeTab === 'list' && (
-                        <motion.div 
-                            key="list"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 20 }}
-                            className="space-y-4"
-                        >
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-gray-900">Project Order & Management</h2>
-                                <p className="text-sm text-gray-500">Drag items to reorder content on the homepage.</p>
-                            </div>
-                            
+                    {activeTab === 'list' && (
+                        <motion.div key="list" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4">
+                            <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-gray-900">Project Order & Management</h2><p className="text-sm text-gray-500">Drag items to reorder content on the homepage.</p></div>
                             <Reorder.Group axis="y" values={localProjects} onReorder={setLocalProjects} className="flex flex-col gap-4" layoutScroll>
-                                {localProjects.map((project, index) => (
-                                    <SortableProjectItem 
-                                        key={project.id} 
-                                        project={project}
-                                        index={index}
-                                        onEdit={() => handleEditClick(project)}
-                                        onDelete={() => onDeleteProject(project.id)}
-                                        onOpenComments={() => handleOpenComments(project)}
-                                        onDragStart={handleDragStart}
-                                        onDragEnd={handleDragEnd}
-                                    />
-                                ))}
+                                {localProjects.map((project, index) => (<SortableProjectItem key={project.id} project={project} index={index} onEdit={() => handleEditClick(project)} onDelete={() => onDeleteProject(project.id)} onOpenComments={() => handleOpenComments(project)} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />))}
                             </Reorder.Group>
                         </motion.div>
                     )}
 
                     {activeTab === 'form' && (
-                        <motion.div 
-                            key="form"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 max-w-3xl mx-auto"
-                        >
-                            <div className="flex justify-between items-center mb-8">
-                                <h2 className="text-2xl font-bold text-gray-900">{editingId ? 'Edit Project' : 'Upload Project Details'}</h2>
-                                <button onClick={() => { setActiveTab('list'); resetForm(); }} className="text-gray-500 hover:text-black"><X size={24} /></button>
-                            </div>
+                        <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 max-w-3xl mx-auto">
+                            <div className="flex justify-between items-center mb-8"><h2 className="text-2xl font-bold text-gray-900">{editingId ? 'Edit Project' : 'Upload Project Details'}</h2><button onClick={() => { setActiveTab('list'); resetForm(); }} className="text-gray-500 hover:text-black"><X size={24} /></button></div>
                             <form onSubmit={handleSubmit} className="space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <Input label="Project Title" name="title" value={formData.title} onChange={handleInputChange} placeholder="e.g. Finance Dashboard" />
-                                    <Input label="Category" name="category" value={formData.category} onChange={handleInputChange} placeholder="e.g. UI/UX Design" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700 block">Cover Image URL</label>
-                                    <input type="url" name="image" value={formData.image} onChange={handleInputChange} placeholder="https://..." className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all font-medium"/>
-                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6"><Input label="Project Title" name="title" value={formData.title} onChange={handleInputChange} placeholder="e.g. Finance Dashboard" /><Input label="Category" name="category" value={formData.category} onChange={handleInputChange} placeholder="e.g. UI/UX Design" /></div>
+                                <ImageInput label="Cover Image URL" name="image" value={formData.image} onChange={handleInputChange} placeholder="https://..." />
                                 <div className="space-y-4">
-                                    <label className="text-sm font-bold text-gray-700 flex justify-between items-center">
-                                        <span>Project Gallery Images</span>
-                                        <button type="button" onClick={addGalleryField} className="text-xs bg-black text-white px-3 py-1.5 rounded-md hover:bg-gray-800 transition-colors flex items-center gap-1"><Plus size={14} /> Add Image</button>
-                                    </label>
-                                    <div className="space-y-3">
-                                        {galleryUrls.map((url, index) => (
-                                            <div key={index} className="flex gap-2 items-start">
-                                                <input type="url" value={url} onChange={(e) => handleGalleryChange(index, e.target.value)} placeholder={`Gallery Image URL ${index + 1}`} className="flex-1 px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium"/>
-                                                {galleryUrls.length > 1 && (<button type="button" onClick={() => removeGalleryField(index)} className="p-3 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={20} /></button>)}
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <div className="flex justify-between items-center"><label className="text-sm font-bold text-gray-700">Project Gallery Images</label><button type="button" onClick={addGalleryField} className="text-xs bg-black text-white px-3 py-1.5 rounded-md hover:bg-gray-800 transition-colors flex items-center gap-1"><Plus size={14} /> Add Image</button></div>
+                                    <div className="space-y-3">{galleryUrls.map((url, index) => (<div key={index} className="flex gap-2 items-start"><div className="flex-1"><ImageInput value={url} onChange={(e: any) => handleGalleryChange(index, e.target.value)} placeholder={`Gallery Image URL ${index + 1}`} /></div>{galleryUrls.length > 1 && (<button type="button" onClick={() => removeGalleryField(index)} className="p-3 text-red-500 hover:bg-red-50 rounded-lg mt-1"><Trash2 size={20} /></button>)}</div>))}</div>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                     <Input label="Role" name="role" value={formData.role} onChange={handleInputChange} placeholder="Lead Designer" />
-                                     <Input label="Client" name="client" value={formData.client} onChange={handleInputChange} placeholder="Company Name" />
-                                     <Input label="Year" name="year" value={formData.year} onChange={handleInputChange} placeholder="2024" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700 block">Description</label>
-                                    <textarea name="description" value={formData.description} onChange={handleInputChange} rows={5} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black resize-none" placeholder="Detailed project description..."/>
-                                </div>
-                                <div className="pt-6 border-t border-gray-100 flex justify-end gap-3 sticky bottom-0 bg-white py-4 z-10">
-                                    <button type="button" onClick={() => { setActiveTab('list'); resetForm(); }} className="px-6 py-3 text-gray-600 font-medium hover:bg-gray-100 rounded-xl">Cancel</button>
-                                    <button type="submit" className="px-8 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-800 flex items-center gap-2"><Save size={18} />{editingId ? 'Update Project' : 'Save Project'}</button>
-                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6"><Input label="Role" name="role" value={formData.role} onChange={handleInputChange} placeholder="Lead Designer" /><Input label="Client" name="client" value={formData.client} onChange={handleInputChange} placeholder="Company Name" /><Input label="Year" name="year" value={formData.year} onChange={handleInputChange} placeholder="2024" /></div>
+                                <div className="space-y-2"><label className="text-sm font-bold text-gray-700 block">Description</label><textarea name="description" value={formData.description} onChange={handleInputChange} rows={5} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black resize-none" placeholder="Detailed project description..."/></div>
+                                <div className="pt-6 border-t border-gray-100 flex justify-end gap-3 sticky bottom-0 bg-white py-4 z-10"><button type="button" onClick={() => { setActiveTab('list'); resetForm(); }} className="px-6 py-3 text-gray-600 font-medium hover:bg-gray-100 rounded-xl">Cancel</button><button type="submit" className="px-8 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-800 flex items-center gap-2"><Save size={18} />{editingId ? 'Update Project' : 'Save Project'}</button></div>
                             </form>
                         </motion.div>
                     )}
 
                     {activeTab === 'logos' && (
-                        <motion.div 
-                            key="logos"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 max-w-4xl mx-auto"
-                        >
+                        <motion.div key="logos" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 max-w-4xl mx-auto">
                             <h2 className="text-2xl font-bold text-gray-900 mb-6">Manage Client Logos</h2>
-                            
-                            {/* Add Logo Form */}
-                            <div className="bg-gray-50 p-6 rounded-xl mb-8 border border-gray-200">
-                                <h3 className="font-bold text-lg mb-4">Add New Logo</h3>
-                                <form onSubmit={handleAddLogo} className="flex flex-col md:flex-row gap-4 items-end">
-                                    <div className="flex-1 w-full space-y-2">
-                                        <label className="text-sm font-bold text-gray-700">Client Name <span className="text-gray-400 font-normal">(Optional)</span></label>
-                                        <input type="text" value={newLogoName} onChange={(e) => setNewLogoName(e.target.value)} placeholder="e.g. Nike" className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black" />
-                                    </div>
-                                    <div className="flex-[2] w-full space-y-2">
-                                        <label className="text-sm font-bold text-gray-700">Logo Image URL</label>
-                                        <input type="url" value={newLogoUrl} onChange={(e) => setNewLogoUrl(e.target.value)} placeholder="https://..." className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black" required />
-                                    </div>
-                                    <button type="submit" disabled={isAddingLogo} className="px-6 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 h-[50px]">{isAddingLogo ? 'Adding...' : 'Add Logo'}</button>
-                                </form>
-                            </div>
-
-                            {/* Bulk Actions Toolbar */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
-                                <div className="flex items-center justify-between w-full sm:w-auto gap-4">
-                                    <span className="text-sm font-bold text-gray-500 whitespace-nowrap">{logos.length} Logos</span>
-                                    
-                                    <button 
-                                        onClick={toggleAllLogos} 
-                                        className="text-sm font-medium text-gray-900 hover:text-black flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
-                                    >
-                                        {/* Increase hit area */}
-                                        <div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors ${selectedLogoIds.size === logos.length && logos.length > 0 ? 'bg-black border-black text-white' : 'border-gray-300 bg-white'}`}>
-                                            {selectedLogoIds.size === logos.length && logos.length > 0 && <Check size={12} strokeWidth={3} />}
-                                        </div>
-                                        Select All
-                                    </button>
-                                </div>
-
-                                {/* Delete Button - Full width on mobile */}
-                                <AnimatePresence>
-                                    {selectedLogoIds.size > 0 && (
-                                        <motion.button 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: 10 }}
-                                            onClick={() => setShowBulkDeleteConfirm(true)} 
-                                            className="w-full sm:w-auto text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-colors shadow-sm"
-                                        >
-                                            <Trash2 size={18} /> 
-                                            Delete Selected ({selectedLogoIds.size})
-                                        </motion.button>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-
-                            {/* Grid */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                                {logos.map((logo) => {
-                                    const id = logo._id || logo.id || '';
-                                    const isSelected = selectedLogoIds.has(id);
-                                    return (
-                                        <div 
-                                            key={id} 
-                                            onClick={() => toggleLogoSelection(id)}
-                                            className={`
-                                                relative group border rounded-2xl p-4 flex flex-col items-center justify-center h-40 transition-all cursor-pointer select-none
-                                                ${isSelected 
-                                                    ? 'border-black ring-1 ring-black bg-gray-50/50' 
-                                                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
-                                                }
-                                            `}
-                                        >
-                                            {/* Selection Checkbox - Top Left */}
-                                            <div className="absolute top-3 left-3 z-10">
-                                                <div className={`
-                                                    w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all
-                                                    ${isSelected ? 'bg-black border-black text-white' : 'bg-white border-gray-200 text-transparent group-hover:border-gray-300'}
-                                                `}>
-                                                    <Check size={14} strokeWidth={3} />
-                                                </div>
-                                            </div>
-
-                                            {/* Individual Delete - Top Right */}
-                                            {/* Always visible on touch (group-hover not reliable), or visible if selected */}
-                                            <button 
-                                                onClick={(e) => { e.stopPropagation(); setLogoToDelete(id); }} 
-                                                className={`
-                                                    absolute top-2 right-2 p-2.5 rounded-full transition-all z-20
-                                                    ${isSelected || 'md:opacity-0 md:group-hover:opacity-100'} 
-                                                    ${isSelected ? 'bg-white text-red-500 shadow-sm' : 'bg-red-50 text-red-500'}
-                                                    hover:bg-red-100 hover:scale-110 active:scale-95
-                                                `}
-                                                title="Delete Logo"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-
-                                            <div className="flex-1 w-full flex items-center justify-center p-2">
-                                                 <img src={logo.url} alt={logo.name} className="max-w-full max-h-full object-contain pointer-events-none" loading="lazy" />
-                                            </div>
-                                            
-                                            {logo.name && (
-                                                <div className="w-full text-center">
-                                                    <span className="text-xs font-medium text-gray-500 truncate block px-2 py-1 bg-gray-100/50 rounded-md">
-                                                        {logo.name}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            <div className="bg-gray-50 p-6 rounded-xl mb-8 border border-gray-200"><h3 className="font-bold text-lg mb-4">Add New Logo</h3><form onSubmit={handleAddLogo} className="flex flex-col md:flex-row gap-4 items-end"><div className="flex-1 w-full space-y-2"><label className="text-sm font-bold text-gray-700">Client Name <span className="text-gray-400 font-normal">(Optional)</span></label><input type="text" value={newLogoName} onChange={(e) => setNewLogoName(e.target.value)} placeholder="e.g. Nike" className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black" /></div><div className="flex-[2] w-full space-y-2"><label className="text-sm font-bold text-gray-700">Logo Image URL</label><input type="url" value={newLogoUrl} onChange={(e) => setNewLogoUrl(e.target.value)} placeholder="https://..." className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black" required /></div><button type="submit" disabled={isAddingLogo} className="px-6 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 h-[50px]">{isAddingLogo ? 'Adding...' : 'Add Logo'}</button></form></div>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100"><div className="flex items-center justify-between w-full sm:w-auto gap-4"><span className="text-sm font-bold text-gray-500 whitespace-nowrap">{logos.length} Logos</span><button onClick={toggleAllLogos} className="text-sm font-medium text-gray-900 hover:text-black flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"><div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors ${selectedLogoIds.size === logos.length && logos.length > 0 ? 'bg-black border-black text-white' : 'border-gray-300 bg-white'}`}>{selectedLogoIds.size === logos.length && logos.length > 0 && <Check size={12} strokeWidth={3} />}</div>Select All</button></div><AnimatePresence>{selectedLogoIds.size > 0 && (<motion.button initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} onClick={() => setShowBulkDeleteConfirm(true)} className="w-full sm:w-auto text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-colors shadow-sm"><Trash2 size={18} /> Delete Selected ({selectedLogoIds.size})</motion.button>)}</AnimatePresence></div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">{logos.map((logo) => { const id = logo._id || logo.id || ''; const isSelected = selectedLogoIds.has(id); return (<div key={id} onClick={() => toggleLogoSelection(id)} className={`relative group border rounded-2xl p-4 flex flex-col items-center justify-center h-40 transition-all cursor-pointer select-none ${isSelected ? 'border-black ring-1 ring-black bg-gray-50/50' : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'}`}><div className="absolute top-3 left-3 z-10"><div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-black border-black text-white' : 'bg-white border-gray-200 text-transparent group-hover:border-gray-300'}`}><Check size={14} strokeWidth={3} /></div></div><button onClick={(e) => { e.stopPropagation(); setLogoToDelete(id); }} className={`absolute top-2 right-2 p-2.5 rounded-full transition-all z-20 ${isSelected || 'md:opacity-0 md:group-hover:opacity-100'} ${isSelected ? 'bg-white text-red-500 shadow-sm' : 'bg-red-50 text-red-500'} hover:bg-red-100 hover:scale-110 active:scale-95`} title="Delete Logo"><Trash2 size={16} /></button><div className="flex-1 w-full flex items-center justify-center p-2"><img src={logo.url} alt={logo.name} className="max-w-full max-h-full object-contain pointer-events-none" loading="lazy" /></div>{logo.name && (<div className="w-full text-center"><span className="text-xs font-medium text-gray-500 truncate block px-2 py-1 bg-gray-100/50 rounded-md">{logo.name}</span></div>)}</div>); })}</div>
                             {logos.length === 0 && (<p className="text-center text-gray-400 py-8">No logos added yet.</p>)}
                         </motion.div>
                     )}
 
                     {activeTab === 'profile' && (
-                        <motion.div 
-                            key="profile"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="max-w-4xl mx-auto space-y-8 pb-12"
-                        >
-                            {/* ... Profile Form Content ... */}
-                             <div className="flex justify-between items-center mb-2 sticky top-20 z-20 bg-gray-50/80 backdrop-blur-sm py-4">
-                                <h2 className="text-2xl font-bold text-gray-900">Edit Profile & Content</h2>
-                                <motion.button onClick={handleSaveProfile} disabled={saveProfileStatus !== 'idle'} animate={saveProfileStatus} className={`relative px-6 py-3 rounded-xl font-bold text-white shadow-lg flex items-center gap-2 overflow-hidden transition-colors ${saveProfileStatus === 'success' ? 'bg-green-500 shadow-green-500/30' : saveProfileStatus === 'error' ? 'bg-red-500 shadow-red-500/30' : 'bg-black shadow-black/20 hover:bg-gray-800'}`}>
-                                    <AnimatePresence mode="popLayout" initial={false}>
-                                        {saveProfileStatus === 'idle' && (<motion.div key="idle" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Save Changes</span><Save size={18} /></motion.div>)}
-                                        {saveProfileStatus === 'saving' && (<motion.div key="saving" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Saving...</span><Loader2 size={18} className="animate-spin" /></motion.div>)}
-                                        {saveProfileStatus === 'success' && (<motion.div key="success" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Saved!</span><Check size={18} /></motion.div>)}
-                                        {saveProfileStatus === 'error' && (<motion.div key="error" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Failed</span><AlertCircle size={18} /></motion.div>)}
-                                    </AnimatePresence>
-                                </motion.button>
-                            </div>
+                        <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-4xl mx-auto space-y-8 pb-12">
+                             <div className="flex justify-between items-center mb-2 sticky top-16 z-20 bg-gray-50/80 backdrop-blur-sm py-4"><h2 className="text-2xl font-bold text-gray-900">Edit Profile & Content</h2><motion.button onClick={handleSaveProfile} disabled={saveProfileStatus !== 'idle'} animate={saveProfileStatus} className={`relative px-6 py-3 rounded-xl font-bold text-white shadow-lg flex items-center gap-2 overflow-hidden transition-colors ${saveProfileStatus === 'success' ? 'bg-green-500 shadow-green-500/30' : saveProfileStatus === 'error' ? 'bg-red-500 shadow-red-500/30' : 'bg-black shadow-black/20 hover:bg-gray-800'}`}><AnimatePresence mode="popLayout" initial={false}>{saveProfileStatus === 'idle' && (<motion.div key="idle" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Save Changes</span><Save size={18} /></motion.div>)}{saveProfileStatus === 'saving' && (<motion.div key="saving" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Saving...</span><Loader2 size={18} className="animate-spin" /></motion.div>)}{saveProfileStatus === 'success' && (<motion.div key="success" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Saved!</span><Check size={18} /></motion.div>)}{saveProfileStatus === 'error' && (<motion.div key="error" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Failed</span><AlertCircle size={18} /></motion.div>)}</AnimatePresence></motion.button></div>
                             
                             <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
                                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100"><div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600"><User size={20} /></div><div><h3 className="font-bold text-lg text-gray-900">Personal Identity</h3><p className="text-sm text-gray-500">Name, Role and Bio details</p></div></div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                    <Input label="Full Name" name="name" value={profileData.name} onChange={handleProfileChange} placeholder="e.g. Nobel" />
-                                    <Input label="Job Title" name="role" value={profileData.role} onChange={handleProfileChange} placeholder="e.g. UX & UI Designer" />
-                                </div>
-                                <div className="space-y-2 mb-6">
-                                    <label className="text-sm font-bold text-gray-700 block">Short Bio</label>
-                                    <textarea name="bio" value={profileData.bio} onChange={handleProfileChange} rows={4} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black resize-none" placeholder="I’m a UX/UI Designer..."/>
-                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><Input label="Full Name" name="name" value={profileData.name} onChange={handleProfileChange} placeholder="e.g. Nobel" /><Input label="Job Title" name="role" value={profileData.role} onChange={handleProfileChange} placeholder="e.g. UX & UI Designer" /></div>
+                                <div className="space-y-2 mb-6"><label className="text-sm font-bold text-gray-700 block">Short Bio</label><textarea name="bio" value={profileData.bio} onChange={handleProfileChange} rows={4} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black resize-none" placeholder="I’m a UX/UI Designer..."/></div>
                             </section>
 
                             <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
                                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100"><div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><LayoutGrid size={20} /></div><div><h3 className="font-bold text-lg text-gray-900">Hero Section</h3><p className="text-sm text-gray-500">Main landing area details</p></div></div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <Input label="Home Logo URL" name="homeLogo" value={profileData.homeLogo} onChange={handleProfileChange} placeholder="Nav logo URL" />
-                                    <Input label="Hero Image URL" name="heroImage" value={profileData.heroImage} onChange={handleProfileChange} placeholder="Main portrait URL" />
+                                    <ImageInput label="Home Logo URL" name="homeLogo" value={profileData.homeLogo} onChange={handleProfileChange} placeholder="Nav logo URL" />
+                                    <ImageInput label="Hero Image URL" name="heroImage" value={profileData.heroImage} onChange={handleProfileChange} placeholder="Main portrait URL" />
                                     <Input label="Total Projects Count" name="totalProjects" value={profileData.totalProjects} onChange={handleProfileChange} placeholder="e.g. 20" />
                                     <Input label="Years Experience" name="yearsExperience" value={profileData.yearsExperience} onChange={handleProfileChange} placeholder="e.g. 2" />
                                 </div>
@@ -1336,51 +865,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
                             <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
                                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100"><div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600"><AlignLeft size={20} /></div><div><h3 className="font-bold text-lg text-gray-900">About Content</h3><p className="text-sm text-gray-500">Bio images, statistics and features</p></div></div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                    <Input label="Portrait Image (Vertical)" name="aboutImage1" value={profileData.aboutImage1} onChange={handleProfileChange} placeholder="URL" />
-                                    <Input label="Landscape Image" name="aboutImage2" value={profileData.aboutImage2} onChange={handleProfileChange} placeholder="URL" />
+                                    <ImageInput label="Portrait Image (Vertical)" name="aboutImage1" value={profileData.aboutImage1} onChange={handleProfileChange} placeholder="URL" />
+                                    <ImageInput label="Landscape Image" name="aboutImage2" value={profileData.aboutImage2} onChange={handleProfileChange} placeholder="URL" />
                                 </div>
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                                    <div className="md:col-span-1"><Input label="Stat Value" name="statsValue" value={profileData.statsValue} onChange={handleProfileChange} placeholder="e.g. 100" /></div>
-                                    <div className="md:col-span-2"><Input label="Stat Label" name="statsLabel" value={profileData.statsLabel} onChange={handleProfileChange} placeholder="e.g. User-focused screens..." /></div>
-                                </div>
-                                <div className="space-y-4">
-                                     <Input label="Feature Bullet 1" name="feature1" value={profileData.feature1} onChange={handleProfileChange} placeholder="e.g. Agency & startup experience..." />
-                                     <Input label="Feature Bullet 2" name="feature2" value={profileData.feature2} onChange={handleProfileChange} placeholder="e.g. Strong UX fundamentals..." />
-                                     <Input label="Resume Link (Google Drive)" name="resumeUrl" value={profileData.resumeUrl} onChange={handleProfileChange} placeholder="https://..." />
-                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6 mb-6"><div className="md:col-span-1"><Input label="Stat Value" name="statsValue" value={profileData.statsValue} onChange={handleProfileChange} placeholder="e.g. 100" /></div><div className="md:col-span-2"><Input label="Stat Label" name="statsLabel" value={profileData.statsLabel} onChange={handleProfileChange} placeholder="e.g. User-focused screens..." /></div></div>
+                                <div className="space-y-4"><Input label="Feature Bullet 1" name="feature1" value={profileData.feature1} onChange={handleProfileChange} placeholder="e.g. Agency & startup experience..." /><Input label="Feature Bullet 2" name="feature2" value={profileData.feature2} onChange={handleProfileChange} placeholder="e.g. Strong UX fundamentals..." /><Input label="Resume Link (Google Drive)" name="resumeUrl" value={profileData.resumeUrl} onChange={handleProfileChange} placeholder="https://..." /></div>
                             </section>
                             
                             <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
                                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100"><div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600"><LinkIcon size={20} /></div><div><h3 className="font-bold text-lg text-gray-900">Contact & Socials</h3><p className="text-sm text-gray-500">Links and contact info</p></div></div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                     <Input label="Contact Email" name="email" value={profileData.email} onChange={handleProfileChange} placeholder="email@example.com" />
-                                     <Input label="Copyright Year" name="copyrightYear" value={profileData.copyrightYear} onChange={handleProfileChange} placeholder="2026" />
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div className="space-y-2"><label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Linkedin size={14}/> LinkedIn URL</label><input type="text" name="socialLinkedin" value={profileData.socialLinkedin} onChange={handleProfileChange} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="https://..." /></div>
-                                    <div className="space-y-2"><label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Globe size={14}/> Behance URL</label><input type="text" name="socialBehance" value={profileData.socialBehance} onChange={handleProfileChange} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="https://..." /></div>
-                                    <div className="space-y-2"><label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Instagram size={14}/> Instagram URL</label><input type="text" name="socialInstagram" value={profileData.socialInstagram} onChange={handleProfileChange} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="https://..." /></div>
-                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><Input label="Contact Email" name="email" value={profileData.email} onChange={handleProfileChange} placeholder="email@example.com" /><Input label="Copyright Year" name="copyrightYear" value={profileData.copyrightYear} onChange={handleProfileChange} placeholder="2026" /></div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6"><div className="space-y-2"><label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Linkedin size={14}/> LinkedIn URL</label><input type="text" name="socialLinkedin" value={profileData.socialLinkedin} onChange={handleProfileChange} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="https://..." /></div><div className="space-y-2"><label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Globe size={14}/> Behance URL</label><input type="text" name="socialBehance" value={profileData.socialBehance} onChange={handleProfileChange} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="https://..." /></div><div className="space-y-2"><label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Instagram size={14}/> Instagram URL</label><input type="text" name="socialInstagram" value={profileData.socialInstagram} onChange={handleProfileChange} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="https://..." /></div></div>
                             </section>
 
                             <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
                                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100"><div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600"><Shield size={20} /></div><div><h3 className="font-bold text-lg text-gray-900">Admin Access</h3><p className="text-sm text-gray-500">Update login credentials</p></div></div>
-                                <form onSubmit={handleUpdateCredentials} className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2"><label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Mail size={14}/> New Admin Email</label><input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="new.admin@example.com" /></div>
-                                        <div className="space-y-2"><label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Key size={14}/> New Password</label><input type="text" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="New secure password" /></div>
-                                    </div>
-                                    <div className="flex justify-end">
-                                        <motion.button type="submit" disabled={credStatus !== 'idle'} animate={credStatus} className={`relative px-6 py-3 rounded-xl font-bold text-white shadow-lg flex items-center gap-2 overflow-hidden transition-colors ${credStatus === 'success' ? 'bg-green-500 shadow-green-500/30' : credStatus === 'error' ? 'bg-red-500 shadow-red-500/30' : 'bg-black shadow-black/20 hover:bg-gray-800'}`}>
-                                            <AnimatePresence mode="popLayout" initial={false}>
-                                                {credStatus === 'idle' && (<motion.div key="idle" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Update Credentials</span><Save size={18} /></motion.div>)}
-                                                {credStatus === 'saving' && (<motion.div key="saving" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Updating...</span><Loader2 size={18} className="animate-spin" /></motion.div>)}
-                                                {credStatus === 'success' && (<motion.div key="success" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Updated!</span><Check size={18} /></motion.div>)}
-                                                {credStatus === 'error' && (<motion.div key="error" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Failed</span><AlertCircle size={18} /></motion.div>)}
-                                            </AnimatePresence>
-                                        </motion.button>
-                                    </div>
-                                </form>
+                                <form onSubmit={handleUpdateCredentials} className="space-y-6"><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="space-y-2"><label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Mail size={14}/> New Admin Email</label><input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="new.admin@example.com" /></div><div className="space-y-2"><label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Key size={14}/> New Password</label><input type="text" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="New secure password" /></div></div><div className="flex justify-end"><motion.button type="submit" disabled={credStatus !== 'idle'} animate={credStatus} className={`relative px-6 py-3 rounded-xl font-bold text-white shadow-lg flex items-center gap-2 overflow-hidden transition-colors ${credStatus === 'success' ? 'bg-green-500 shadow-green-500/30' : credStatus === 'error' ? 'bg-red-500 shadow-red-500/30' : 'bg-black shadow-black/20 hover:bg-gray-800'}`}><AnimatePresence mode="popLayout" initial={false}>{credStatus === 'idle' && (<motion.div key="idle" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Update Credentials</span><Save size={18} /></motion.div>)}{credStatus === 'saving' && (<motion.div key="saving" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Updating...</span><Loader2 size={18} className="animate-spin" /></motion.div>)}{credStatus === 'success' && (<motion.div key="success" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Updated!</span><Check size={18} /></motion.div>)}{credStatus === 'error' && (<motion.div key="error" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Failed</span><AlertCircle size={18} /></motion.div>)}</AnimatePresence></motion.button></div></form>
                             </section>
                         </motion.div>
                     )}
@@ -1480,5 +980,84 @@ const Input = ({ label, name, value, onChange, placeholder }: any) => (
         <input type="text" name={name} value={value} onChange={onChange} placeholder={placeholder} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all font-medium"/>
     </div>
 );
+
+const ImageInput = ({ label, name, value, onChange, placeholder }: any) => {
+    const [error, setError] = useState(false);
+    useEffect(() => { setError(false); }, [value]);
+    
+    return (
+        <div className="space-y-2">
+            {label && <label className="text-sm font-bold text-gray-700 block">{label}</label>}
+            <div className="flex gap-3 items-center">
+                <input 
+                    type="text" 
+                    name={name} 
+                    value={value} 
+                    onChange={onChange} 
+                    placeholder={placeholder} 
+                    className="flex-1 w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all font-medium"
+                />
+                <AnimatePresence>
+                    {value && !error && (
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.8, width: 0 }} 
+                            animate={{ opacity: 1, scale: 1, width: 'auto' }} 
+                            exit={{ opacity: 0, scale: 0.8, width: 0 }}
+                            className="shrink-0"
+                        >
+                            <div className="relative w-16 h-[46px] bg-white rounded-lg border border-gray-200 overflow-hidden flex items-center justify-center shadow-sm">
+                                <div className="absolute inset-0 bg-gray-50"></div>
+                                <img src={value} alt="Preview" className="relative z-10 h-full w-full object-contain" onError={() => setError(true)} />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </div>
+    );
+};
+
+const ExpandableMessage = ({ text }: { text: string }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    // Use a character limit to determine if we SHOULD show the expand button
+    const CHAR_LIMIT = 280; 
+    const isLong = text.length > CHAR_LIMIT;
+
+    return (
+        <div className="pl-0 md:pl-13 mt-2">
+            <motion.div 
+                initial={false}
+                animate={{ 
+                    height: isExpanded ? "auto" : (isLong ? 84 : "auto")
+                }}
+                style={{
+                    maskImage: !isExpanded && isLong 
+                        ? "linear-gradient(to bottom, black 60%, transparent 100%)" 
+                        : "none",
+                    WebkitMaskImage: !isExpanded && isLong 
+                        ? "linear-gradient(to bottom, black 60%, transparent 100%)" 
+                        : "none"
+                }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }} // Smooth Material Design-like curve
+                className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap overflow-hidden relative"
+            >
+                {text}
+            </motion.div>
+            
+            {isLong && (
+                <button 
+                    onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+                    className="mt-3 text-xs font-bold text-gray-400 hover:text-black transition-colors flex items-center gap-1 uppercase tracking-wider"
+                >
+                    {isExpanded ? (
+                        <>Show Less <ChevronUp size={14} /></>
+                    ) : (
+                        <>Read Full Message <ChevronDown size={14} /></>
+                    )}
+                </button>
+            )}
+        </div>
+    );
+};
 
 export default AdminDashboard;
