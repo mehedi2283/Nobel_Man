@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, Reorder, useMotionValue, useSpring } from 'framer-motion';
-import { LogOut, Plus, Save, Trash2, LayoutGrid, X, Edit2, MessageCircle, Heart, MessageSquare, Briefcase, User, Mail, Link as LinkIcon, Globe, Instagram, Linkedin, AlignLeft, Check, Loader2, AlertCircle, Home, LayoutDashboard, Key, Shield, Calendar, Sparkles, Filter, CheckSquare, Square, CornerDownRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { LogOut, Plus, Save, Trash2, LayoutGrid, X, Edit2, MessageCircle, Heart, MessageSquare, Briefcase, User, Mail, Link as LinkIcon, Globe, Instagram, Linkedin, AlignLeft, Check, Loader2, AlertCircle, Home, LayoutDashboard, Key, Shield, Calendar, Sparkles, Filter, CheckSquare, Square, CornerDownRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Project, ClientLogo, ProfileData, ContactMessage, Comment, ChatLog } from '../types';
 import { projectService } from '../services/projectService';
 import { DEFAULT_PROFILE_DATA } from '../constants';
@@ -121,7 +121,7 @@ const SortableProjectItem = React.memo(({
                 </div>
             </div>
             <div className="flex items-center gap-2 ml-auto w-full md:w-auto justify-end">
-                <div className="hidden md:flex items-center gap-4 mr-4 border-r border-gray-100 pr-4">
+                <div className="flex items-center gap-4 mr-auto md:mr-4 md:border-r border-gray-100 md:pr-4">
                     <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500" title="Likes">
                         <Heart size={14} className={project.likes ? 'text-red-500 fill-red-500' : ''} /> 
                         {project.likes || 0}
@@ -132,9 +132,9 @@ const SortableProjectItem = React.memo(({
                     </div>
                 </div>
                 
-                <button onPointerDown={(e) => e.stopPropagation()} onClick={onOpenComments} className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium px-3"><MessageSquare size={16} /></button>
-                <button onPointerDown={(e) => e.stopPropagation()} onClick={onEdit} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium px-3"><Edit2 size={16} /> Edit</button>
-                <button onPointerDown={(e) => e.stopPropagation()} onClick={onDelete} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium px-3"><Trash2 size={16} /> Delete</button>
+                <button onPointerDown={(e) => e.stopPropagation()} onClick={onOpenComments} className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium px-2 md:px-3"><MessageSquare size={16} /></button>
+                <button onPointerDown={(e) => e.stopPropagation()} onClick={onEdit} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium px-2 md:px-3"><Edit2 size={16} /> <span className="hidden sm:inline">Edit</span></button>
+                <button onPointerDown={(e) => e.stopPropagation()} onClick={onDelete} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium px-2 md:px-3"><Trash2 size={16} /> <span className="hidden sm:inline">Delete</span></button>
             </div>
         </Reorder.Item>
     );
@@ -191,6 +191,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
   const [dateFilter, setDateFilter] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
+  // Direction for calendar animation: -1 for prev, 1 for next
+  const [calendarDirection, setCalendarDirection] = useState(0);
   
   // Inbox Pagination State
   const [inboxPage, setInboxPage] = useState(1);
@@ -439,7 +441,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
      onReorderProjects(localProjects);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
   
@@ -472,7 +474,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
       image: formData.image || '',
       description: formData.description || '',
       role: formData.role || 'Designer',
-      year: formData.year || '2024',
+      year: formData.year || new Date().getFullYear().toString(),
       client: formData.client || 'Personal',
       gallery: finalGallery,
       likes: formData.likes || 0,
@@ -618,11 +620,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
 
   // --- Custom Calendar Logic ---
   const handlePrevMonth = () => {
+    setCalendarDirection(-1);
     setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1));
   };
   const handleNextMonth = () => {
+    setCalendarDirection(1);
     setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1));
   };
+  const handlePrevYear = () => {
+    setCalendarDirection(-1);
+    setCalendarMonth(new Date(calendarMonth.getFullYear() - 1, calendarMonth.getMonth(), 1));
+  };
+  const handleNextYear = () => {
+    setCalendarDirection(1);
+    setCalendarMonth(new Date(calendarMonth.getFullYear() + 1, calendarMonth.getMonth(), 1));
+  };
+
   const handleDateClick = (day: number) => {
     const selectedDate = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
     // Format YYYY-MM-DD manually to avoid timezone issues
@@ -631,6 +644,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
     const d = String(selectedDate.getDate()).padStart(2, '0');
     setDateFilter(`${year}-${month}-${d}`);
     setShowDatePicker(false);
+  };
+
+  // Animation variants for sliding calendar
+  const calendarVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 20 : -20,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? 20 : -20,
+      opacity: 0,
+    }),
   };
 
   const renderCalendar = () => {
@@ -642,7 +671,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
     const days = [];
     // Empty slots for previous month
     for (let i = 0; i < firstDay; i++) {
-        days.push(<div key={`empty-${i}`} className="w-8 h-8" />);
+        days.push(<div key={`empty-${i}`} className="w-8 h-8 sm:w-9 sm:h-9" />);
     }
     // Days
     for (let i = 1; i <= daysInMonth; i++) {
@@ -654,9 +683,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
             <button
                 key={i}
                 onClick={(e) => { e.stopPropagation(); handleDateClick(i); }}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors
-                    ${isSelected ? 'bg-black text-white' : 'hover:bg-gray-100 text-gray-700'}
-                    ${isToday && !isSelected ? 'text-blue-600 font-bold' : ''}
+                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 select-none cursor-pointer
+                    ${isSelected ? 'bg-black text-white shadow-md transform scale-105' : 'text-gray-700 hover:bg-gray-200 hover:font-bold'}
+                    ${isToday && !isSelected ? 'text-blue-600 font-bold bg-blue-50' : ''}
                 `}
             >
                 {i}
@@ -673,6 +702,65 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
         ? 'bg-white border-gray-200 shadow-sm text-gray-900 font-bold' 
         : 'border-transparent text-gray-500 hover:bg-white/50 hover:text-gray-900 font-medium'
     }`;
+  };
+
+  // Custom Animated Year Select Dropdown
+  const CustomYearSelect = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
+      const [isOpen, setIsOpen] = useState(false);
+      const containerRef = useRef<HTMLDivElement>(null);
+      
+      useEffect(() => {
+          const handleClickOutside = (event: MouseEvent) => {
+              if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                  setIsOpen(false);
+              }
+          };
+          document.addEventListener("mousedown", handleClickOutside);
+          return () => document.removeEventListener("mousedown", handleClickOutside);
+      }, []);
+
+      const currentYear = new Date().getFullYear();
+      // Generate years: Current + 2 down to 2010
+      const years = Array.from({ length: currentYear - 2010 + 3 }, (_, i) => currentYear + 2 - i);
+
+      return (
+        <div className="space-y-2 relative" ref={containerRef}>
+          <label className="text-sm font-bold text-gray-700 block">Year</label>
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black transition-all font-medium text-left flex justify-between items-center group hover:border-gray-400"
+          >
+            <span>{value || 'Select Year'}</span>
+            <ChevronDown size={16} className={`transition-transform duration-300 text-gray-500 group-hover:text-black ${isOpen ? 'rotate-180' : ''}`} />
+          </button>
+          
+          <AnimatePresence>
+            {isOpen && (
+                <motion.div
+                    initial={{ opacity: 0, y: -5, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -5, scale: 0.98 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto z-50 scrollbar-hide"
+                >
+                    {years.map(y => (
+                        <button
+                            key={y}
+                            type="button"
+                            onClick={() => { onChange(y.toString()); setIsOpen(false); }}
+                            className={`w-full text-left px-4 py-3 text-sm transition-colors hover:bg-gray-50 first:rounded-t-xl last:rounded-b-xl
+                                ${value === y.toString() ? 'bg-gray-50 font-bold text-black' : 'text-gray-600'}
+                            `}
+                        >
+                            {y}
+                        </button>
+                    ))}
+                </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      );
   };
 
   // Tabs config for Mobile Nav
@@ -781,7 +869,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
                                        recentActivity.map((item) => (
                                            <div key={item.id} className="flex gap-4 items-start group">
                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border transition-colors ${item.type === 'comment' ? 'bg-blue-50 text-blue-600 border-blue-100 group-hover:border-blue-200 group-hover:bg-blue-100' : 'bg-purple-50 text-purple-600 border-purple-100 group-hover:border-purple-200 group-hover:bg-purple-100'}`}>{item.type === 'comment' ? <MessageCircle size={18} /> : <Mail size={18} />}</div>
-                                               <div className="flex-1 min-w-0"><div className="flex justify-between items-start mb-1"><h4 className="font-bold text-gray-900 text-sm">{item.author}</h4><span className="text-xs text-gray-400 font-mono">{item.date.toLocaleDateString()}</span></div><p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1">{item.type === 'comment' ? <MessageCircle size={12}/> : <Mail size={12}/>}{item.subtext}</p><div className="bg-gray-50 p-4 rounded-xl text-sm text-gray-600 group-hover:bg-gray-100 transition-colors leading-relaxed">{item.text}</div></div>
+                                               <div className="flex-1 min-w-0"><div className="flex justify-between items-start mb-1"><h4 className="font-bold text-gray-900 text-sm">{item.author}</h4><span className="text-xs text-gray-400 font-mono">{item.date.toLocaleDateString()}</span></div><p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1">{item.type === 'comment' ? <MessageCircle size={12}/> : <Mail size={12}/>}{item.subtext}</p>
+                                               {/* UPDATED: Use ExpandableMessage for activity text */}
+                                               <ExpandableMessage 
+                                                    text={item.text} 
+                                                    className="bg-gray-50 p-4 rounded-xl text-sm text-gray-600 group-hover:bg-gray-100 transition-colors mt-2"
+                                               />
+                                               </div>
                                            </div>
                                        ))
                                    ) : (<div className="text-center py-12 text-gray-400"><p>No recent activity found.</p></div>)}
@@ -796,11 +890,85 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
                                 <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">Inbox<span className="text-sm font-normal text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{processedInboxData.length} items</span></h2>
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                     <div className="bg-gray-100 p-1 rounded-2xl flex items-center relative gap-1"><button onClick={() => setInboxTab('contact')} className={`relative flex-1 px-8 py-2 text-sm font-bold transition-colors z-10 rounded-xl whitespace-nowrap min-w-[120px] ${inboxTab === 'contact' ? 'text-black' : 'text-gray-500'}`}>Contact Form{inboxTab === 'contact' && (<motion.div layoutId="inbox-tab" className="absolute inset-0 bg-white rounded-xl shadow-sm -z-10 border border-black/5" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />)}</button><button onClick={() => setInboxTab('chat')} className={`relative flex-1 px-8 py-2 text-sm font-bold transition-colors z-10 rounded-xl whitespace-nowrap min-w-[120px] ${inboxTab === 'chat' ? 'text-black' : 'text-gray-500'}`}>Chatbot{inboxTab === 'chat' && (<motion.div layoutId="inbox-tab" className="absolute inset-0 bg-white rounded-xl shadow-sm -z-10 border border-black/5" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />)}</button></div>
-                                    <div className="relative"><button className={`relative cursor-pointer border rounded-2xl px-5 py-2 flex items-center gap-3 transition-all h-[40px] ${dateFilter ? 'bg-black text-white border-black' : 'bg-white border-gray-200 hover:border-gray-400 text-gray-600'}`} onClick={() => setShowDatePicker(!showDatePicker)}><Filter size={14} className={dateFilter ? "text-white" : "text-gray-400"} /><span className="text-sm font-medium">{dateFilter ? new Date(dateFilter).toLocaleDateString() : 'Filter by Date'}</span>{dateFilter && (<span onClick={(e) => { e.stopPropagation(); setDateFilter(''); }} className="ml-2 w-5 h-5 bg-white text-black rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"><X size={12} /></span>)}</button><AnimatePresence>{showDatePicker && (<motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 p-4 z-50 w-72"><div className="flex items-center justify-between mb-4 px-2"><button onClick={handlePrevMonth} className="p-1 hover:bg-gray-100 rounded-full"><ChevronLeft size={18}/></button><span className="font-bold text-gray-900">{calendarMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}</span><button onClick={handleNextMonth} className="p-1 hover:bg-gray-100 rounded-full"><ChevronRight size={18}/></button></div><div className="grid grid-cols-7 gap-1 mb-2 text-center">{['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (<div key={d} className="text-[10px] font-bold text-gray-400 uppercase">{d}</div>))}</div><div className="grid grid-cols-7 gap-1 place-items-center">{renderCalendar()}</div></motion.div>)}</AnimatePresence></div>
+                                    <div className="relative">
+                                        <button 
+                                            className={`relative cursor-pointer border rounded-2xl px-5 py-2 flex items-center gap-3 transition-all h-[40px] ${dateFilter ? 'bg-black text-white border-black' : 'bg-white border-gray-200 hover:border-gray-400 text-gray-600'}`} 
+                                            onClick={() => setShowDatePicker(!showDatePicker)}
+                                        >
+                                            <Filter size={14} className={dateFilter ? "text-white" : "text-gray-400"} />
+                                            <span className="text-sm font-medium">{dateFilter ? new Date(dateFilter).toLocaleDateString() : 'Filter by Date'}</span>
+                                            {dateFilter && (<span onClick={(e) => { e.stopPropagation(); setDateFilter(''); }} className="ml-2 w-5 h-5 bg-white text-black rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"><X size={12} /></span>)}
+                                        </button>
+                                        
+                                        <AnimatePresence>
+                                            {showDatePicker && (
+                                                <motion.div 
+                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }} 
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }} 
+                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }} 
+                                                    className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 p-4 z-50 w-[280px] sm:w-[320px]"
+                                                >
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <h3 className="text-lg font-bold text-gray-900">Jump to date</h3>
+                                                        <button onClick={() => setShowDatePicker(false)} className="text-gray-400 hover:text-black">
+                                                            <X size={20} />
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center justify-between mb-4 px-1">
+                                                        <div className="flex gap-1">
+                                                            <button onClick={handlePrevYear} className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-black transition-colors" title="Previous Year">
+                                                                <ChevronsLeft size={18} />
+                                                            </button>
+                                                            <button onClick={handlePrevMonth} className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-black transition-colors" title="Previous Month">
+                                                                <ChevronLeft size={18} />
+                                                            </button>
+                                                        </div>
+                                                        <span className="font-bold text-gray-900 text-sm sm:text-base whitespace-nowrap">
+                                                            {calendarMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                                                        </span>
+                                                        <div className="flex gap-1">
+                                                            <button onClick={handleNextMonth} className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-black transition-colors" title="Next Month">
+                                                                <ChevronRight size={18} />
+                                                            </button>
+                                                            <button onClick={handleNextYear} className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-black transition-colors" title="Next Year">
+                                                                <ChevronsRight size={18} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="grid grid-cols-7 gap-1 mb-2 text-center">
+                                                        {['Mo','Tu','We','Th','Fr','Sa','Su'].map(d => (
+                                                            <div key={d} className="text-xs font-bold text-gray-400">{d}</div>
+                                                        ))}
+                                                    </div>
+                                                    
+                                                    <div className="overflow-hidden min-h-[200px]">
+                                                        <AnimatePresence mode="popLayout" custom={calendarDirection}>
+                                                            <motion.div 
+                                                                key={calendarMonth.toISOString()}
+                                                                custom={calendarDirection}
+                                                                variants={calendarVariants}
+                                                                initial="enter"
+                                                                animate="center"
+                                                                exit="exit"
+                                                                transition={{ type: "tween", duration: 0.2 }}
+                                                                className="grid grid-cols-7 gap-1 sm:gap-2 place-items-center"
+                                                            >
+                                                                {renderCalendar()}
+                                                            </motion.div>
+                                                        </AnimatePresence>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
                                 </div>
                            </div>
                            <div className="flex-1">
-                                {Object.keys(groupedInbox).length === 0 ? (<div className="text-center py-20 text-gray-400 flex flex-col items-center"><Mail size={64} className="mb-4 opacity-10" /><p>No messages found {dateFilter ? 'for this date' : 'in inbox'}.</p></div>) : (<AnimatePresence mode="wait"><motion.div key={`${inboxTab}-${inboxPage}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="space-y-8">{Object.entries(groupedInbox).map(([date, items]) => (<div key={date}><div className="flex items-center gap-4 mb-4"><div className="h-[1px] bg-gray-200 flex-1"></div><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400"><Calendar size={14} /> {date}</div><div className="h-[1px] bg-gray-200 flex-1"></div></div><div className="space-y-4">{(items as any[]).map((item: any, idx: number) => (<div key={`${item.id}-${idx}`}>{item.email ? (<div className="p-5 rounded-2xl border hover:shadow-md transition-all relative group bg-blue-50/30 border-blue-100"><button onClick={(e) => { e.stopPropagation(); setMessageToDelete(item._id || item.id); }} className="md:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 active:bg-red-50 rounded-full transition-all z-10"><Trash2 size={18} /></button><div className="flex justify-between items-start mb-3 pr-12 md:pr-0 relative"><div className="flex items-center gap-3 overflow-hidden"><div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0"><Mail size={20} /></div><div className="min-w-0 flex-1"><h3 className="font-bold text-gray-900 truncate pr-2">{item.name}</h3><a href={`mailto:${item.email}`} className="text-xs text-blue-600 hover:underline truncate block">{item.email}</a></div></div><div className="flex items-center gap-4 shrink-0"><span className="text-xs text-gray-400 font-mono whitespace-nowrap">{new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span><button onClick={(e) => { e.stopPropagation(); setMessageToDelete(item._id || item.id); }} className="hidden md:block p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all -mr-2" title="Delete Message"><Trash2 size={18} /></button></div></div><ExpandableMessage text={item.message} /></div>) : (<div className="bg-gray-50 rounded-2xl border border-gray-200 p-5 space-y-4"><div className="flex justify-between items-center text-xs text-gray-400 mb-2 px-2"><span className="uppercase font-bold tracking-wider">Conversation Log</span><span className="font-mono">{new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span></div>{item.userMsg && (<div className="flex justify-end mb-2"><div className="flex items-end gap-2 max-w-[85%] flex-row-reverse"><div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center shrink-0"><User size={14} /></div><div className="bg-white border border-gray-200 px-4 py-2 rounded-2xl rounded-tr-sm shadow-sm text-sm text-gray-800">{item.userMsg.text}</div></div></div>)}{item.userMsg && item.modelMsg && (<div className="flex justify-start pl-10 -my-1 opacity-20"><CornerDownRight size={16} /></div>)}{item.modelMsg && (<div className="flex justify-start"><div className="flex items-start gap-2 max-w-[85%]"><div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-1"><Sparkles size={14} /></div><div className="bg-white border border-purple-100 px-4 py-2 rounded-2xl rounded-tl-sm shadow-sm text-sm text-gray-700">{item.modelMsg.text}</div></div></div>)}</div>)}</div>))}</div></div>))} </motion.div></AnimatePresence>)}
+                                {Object.keys(groupedInbox).length === 0 ? (<div className="text-center py-20 text-gray-400 flex flex-col items-center"><Mail size={64} className="mb-4 opacity-10" /><p>No messages found {dateFilter ? 'for this date' : 'in inbox'}.</p></div>) : (<AnimatePresence mode="wait"><motion.div key={`${inboxTab}-${inboxPage}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="space-y-8">{Object.entries(groupedInbox).map(([date, items]) => (<div key={date}><div className="flex items-center gap-4 mb-4"><div className="h-[1px] bg-gray-200 flex-1"></div><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400"><Calendar size={14} /> {date}</div><div className="h-[1px] bg-gray-200 flex-1"></div></div><div className="space-y-4">{(items as any[]).map((item: any, idx: number) => (<div key={`${item.id}-${idx}`}>{item.email ? (<div className="p-5 rounded-2xl border hover:shadow-md transition-all relative group bg-blue-50/30 border-blue-100"><button onClick={(e) => { e.stopPropagation(); setMessageToDelete(item._id || item.id); }} className="md:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 active:bg-red-50 rounded-full transition-all z-10"><Trash2 size={18} /></button><div className="flex justify-between items-start mb-3 pr-12 md:pr-0 relative"><div className="flex items-center gap-3 overflow-hidden"><div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0"><Mail size={20} /></div><div className="min-w-0 flex-1"><h3 className="font-bold text-gray-900 truncate pr-2">{item.name}</h3>
+                                               {/* UPDATED: break-all instead of truncate */}
+                                               <a href={`mailto:${item.email}`} className="text-xs text-blue-600 hover:underline break-all block">{item.email}</a></div></div><div className="flex items-center gap-4 shrink-0"><span className="text-xs text-gray-400 font-mono whitespace-nowrap">{new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span><button onClick={(e) => { e.stopPropagation(); setMessageToDelete(item._id || item.id); }} className="hidden md:block p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all -mr-2" title="Delete Message"><Trash2 size={18} /></button></div></div><ExpandableMessage text={item.message} /></div>) : (<div className="bg-gray-50 rounded-2xl border border-gray-200 p-5 space-y-4"><div className="flex justify-between items-center text-xs text-gray-400 mb-2 px-2"><span className="uppercase font-bold tracking-wider">Conversation Log</span><span className="font-mono">{new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span></div>{item.userMsg && (<div className="flex justify-end mb-2"><div className="flex items-end gap-2 max-w-[85%] flex-row-reverse"><div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center shrink-0"><User size={14} /></div><div className="bg-white border border-gray-200 px-4 py-2 rounded-2xl rounded-tr-sm shadow-sm text-sm text-gray-800">{item.userMsg.text}</div></div></div>)}{item.userMsg && item.modelMsg && (<div className="flex justify-start pl-10 -my-1 opacity-20"><CornerDownRight size={16} /></div>)}{item.modelMsg && (<div className="flex justify-start"><div className="flex items-start gap-2 max-w-[85%]"><div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-1"><Sparkles size={14} /></div><div className="bg-white border border-purple-100 px-4 py-2 rounded-2xl rounded-tl-sm shadow-sm text-sm text-gray-700">{item.modelMsg.text}</div></div></div>)}</div>)}</div>))}</div></div>))} </motion.div></AnimatePresence>)}
                            </div>
                            {totalInboxPages > 1 && (<div className="mt-8 border-t border-gray-100 pt-6 flex justify-between items-center"><span className="text-xs font-medium text-gray-400">Showing {((inboxPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(inboxPage * ITEMS_PER_PAGE, processedInboxData.length)} of {processedInboxData.length}</span><div className="flex items-center gap-2"><button onClick={() => setInboxPage(p => Math.max(1, p - 1))} disabled={inboxPage === 1} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 transition-colors"><ChevronLeft size={16} /></button><span className="text-sm font-bold text-gray-900 px-2 min-w-[60px] text-center">{inboxPage} / {totalInboxPages}</span><button onClick={() => setInboxPage(p => Math.min(totalInboxPages, p + 1))} disabled={inboxPage === totalInboxPages} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 transition-colors"><ChevronRight size={16} /></button></div></div>)}
                         </motion.div>
@@ -825,7 +993,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
                                     <div className="flex justify-between items-center"><label className="text-sm font-bold text-gray-700">Project Gallery Images</label><button type="button" onClick={addGalleryField} className="text-xs bg-black text-white px-3 py-1.5 rounded-md hover:bg-gray-800 transition-colors flex items-center gap-1"><Plus size={14} /> Add Image</button></div>
                                     <div className="space-y-3">{galleryUrls.map((url, index) => (<div key={index} className="flex gap-2 items-start"><div className="flex-1"><ImageInput value={url} onChange={(e: any) => handleGalleryChange(index, e.target.value)} placeholder={`Gallery Image URL ${index + 1}`} /></div>{galleryUrls.length > 1 && (<button type="button" onClick={() => removeGalleryField(index)} className="p-3 text-red-500 hover:bg-red-50 rounded-lg mt-1"><Trash2 size={20} /></button>)}</div>))}</div>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6"><Input label="Role" name="role" value={formData.role} onChange={handleInputChange} placeholder="Lead Designer" /><Input label="Client" name="client" value={formData.client} onChange={handleInputChange} placeholder="Company Name" /><Input label="Year" name="year" value={formData.year} onChange={handleInputChange} placeholder="2024" /></div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <Input label="Role" name="role" value={formData.role} onChange={handleInputChange} placeholder="Lead Designer" />
+                                    <Input label="Client" name="client" value={formData.client} onChange={handleInputChange} placeholder="Company Name" />
+                                    <CustomYearSelect 
+                                        value={formData.year || ''} 
+                                        onChange={(val) => handleInputChange({ target: { name: 'year', value: val } } as any)} 
+                                    />
+                                </div>
                                 <div className="space-y-2"><label className="text-sm font-bold text-gray-700 block">Description</label><textarea name="description" value={formData.description} onChange={handleInputChange} rows={5} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black resize-none" placeholder="Detailed project description..."/></div>
                                 <div className="pt-6 border-t border-gray-100 flex justify-end gap-3 sticky bottom-0 bg-white py-4 z-10"><button type="button" onClick={() => { setActiveTab('list'); resetForm(); }} className="px-6 py-3 text-gray-600 font-medium hover:bg-gray-100 rounded-xl">Cancel</button><button type="submit" className="px-8 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-800 flex items-center gap-2"><Save size={18} />{editingId ? 'Update Project' : 'Save Project'}</button></div>
                             </form>
@@ -1017,14 +1192,14 @@ const ImageInput = ({ label, name, value, onChange, placeholder }: any) => {
     );
 };
 
-const ExpandableMessage = ({ text }: { text: string }) => {
+const ExpandableMessage = ({ text, className }: { text: string, className?: string }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     // Use a character limit to determine if we SHOULD show the expand button
     const CHAR_LIMIT = 280; 
     const isLong = text.length > CHAR_LIMIT;
 
     return (
-        <div className="pl-0 md:pl-13 mt-2">
+        <div className={className || "pl-0 md:pl-13 mt-2"}>
             <motion.div 
                 initial={false}
                 animate={{ 
