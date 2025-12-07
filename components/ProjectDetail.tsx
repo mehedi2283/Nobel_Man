@@ -517,7 +517,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project: initialProject, 
                                     <button 
                                         type="submit" 
                                         disabled={submitStatus === 'loading' || !newCommentAuthor || !newCommentText}
-                                        className="group/btn relative px-10 py-4 bg-black text-white overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all"
+                                        className="group/btn relative px-10 py-4 bg-black text-white overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <div className="absolute inset-0 bg-gray-800 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
                                         <div className="relative flex items-center gap-4">

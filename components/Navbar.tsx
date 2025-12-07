@@ -83,7 +83,6 @@ const Navbar: React.FC<NavbarProps> = ({ logo }) => {
               href={`#${item.toLowerCase()}`}
               onClick={(e) => handleScrollToSection(e, item.toLowerCase())}
               whileHover={{ scale: 1.05, color: "#000" }}
-              whileTap={{ scale: 0.95 }}
               className="text-gray-600 hover:text-black font-medium text-sm tracking-wide transition-colors cursor-pointer"
             >
               {item}

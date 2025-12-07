@@ -210,7 +210,7 @@ const SubmitButton: React.FC<{ status: 'idle' | 'loading' | 'success' | 'error' 
             type="submit"
             disabled={status !== 'idle'}
             className={`
-                group relative h-16 flex items-center justify-center font-medium text-lg overflow-hidden transition-all duration-500 rounded-lg active:scale-[0.98]
+                group relative h-16 flex items-center justify-center font-medium text-lg overflow-hidden transition-all duration-500 rounded-lg
                 ${status === 'success' ? 'bg-green-500 text-white w-full md:w-auto min-w-[200px]' : status === 'error' ? 'bg-red-500 text-white w-full md:w-auto min-w-[200px]' : 'bg-black text-white w-full md:w-auto min-w-[200px]'}
                 ${status === 'loading' ? '!w-16 px-0 rounded-full' : 'px-8'}
             `}

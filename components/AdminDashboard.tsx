@@ -3,6 +3,7 @@ import { motion, AnimatePresence, Reorder, useMotionValue, useSpring } from 'fra
 import { LogOut, Plus, Save, Trash2, LayoutGrid, X, Edit2, MessageCircle, Heart, MessageSquare, Briefcase, User, Mail, Link as LinkIcon, Globe, Instagram, Linkedin, AlignLeft, Check, Loader2, AlertCircle, Home, LayoutDashboard, Key, Shield, Calendar, Sparkles, Filter, CheckSquare, Square, CornerDownRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Project, ClientLogo, ProfileData, ContactMessage, Comment, ChatLog } from '../types';
 import { projectService } from '../services/projectService';
+import { DEFAULT_PROFILE_DATA } from '../constants';
 import ConfirmationModal from './ConfirmationModal';
 
 interface AdminDashboardProps {
@@ -171,28 +172,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
   const [isBulkDeletingLogos, setIsBulkDeletingLogos] = useState(false);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
-  // Profile Management State
-  const [profileData, setProfileData] = useState<ProfileData>({
-    name: '',
-    role: '',
-    homeLogo: '',
-    heroImage: '',
-    totalProjects: '',
-    yearsExperience: '',
-    resumeUrl: '',
-    bio: '',
-    aboutImage1: '',
-    aboutImage2: '',
-    statsValue: '',
-    statsLabel: '',
-    feature1: '',
-    feature2: '',
-    socialLinkedin: '',
-    socialBehance: '',
-    socialInstagram: '',
-    email: '',
-    copyrightYear: ''
-  });
+  // Profile Management State - Initialize with Default Data
+  const [profileData, setProfileData] = useState<ProfileData>(DEFAULT_PROFILE_DATA);
   const [saveProfileStatus, setSaveProfileStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
   // Admin Credentials State
@@ -234,7 +215,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
       setLogos(logosData);
       
       const pData = await projectService.getProfile();
-      if (pData) setProfileData(pData);
+      // If server returns data, merge it. If null, we stick to default.
+      if (pData && pData.name) {
+          setProfileData(prev => ({ ...prev, ...pData }));
+      }
 
       const msgs = await projectService.getMessages();
       setMessages(msgs);

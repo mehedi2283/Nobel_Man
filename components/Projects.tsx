@@ -137,7 +137,6 @@ const MagneticButton: React.FC<{ onClick: () => void; children: React.ReactNode 
         <motion.button
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            whileTap={{ scale: 0.95 }}
             onClick={onClick}
             className="group relative px-8 py-4 bg-white border border-gray-200 text-gray-900 font-medium rounded-full overflow-hidden transition-colors hover:border-black shadow-sm"
         >
@@ -232,7 +231,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index, onClick, onPr
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      whileTap={{ scale: 0.98 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
       className="group cursor-pointer p-4 border border-transparent hover:border-gray-200 hover:bg-white rounded-none transition-all duration-300"

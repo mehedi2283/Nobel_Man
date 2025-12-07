@@ -33,10 +33,10 @@ const Footer: React.FC<FooterProps> = ({
                 transition={{ duration: 0.8 }}
                 className="max-w-3xl"
             >
-                <h2 className="text-3xl md:text-4xl lg:text-4xl font-light leading-tight tracking-tight mb-2">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-tight mb-2">
                     Curious about what we can create together?
                 </h2>
-                <h2 className="text-3xl md:text-4xl lg:text-4xl font-light leading-tight tracking-tight text-gray-400">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-tight text-gray-400">
                     Let's bring something extraordinary to life!
                 </h2>
             </motion.div>
@@ -79,7 +79,7 @@ const Footer: React.FC<FooterProps> = ({
             </div>
             
             <div className="flex items-center gap-4">
-                <span>Design & Developed By P4kB0Y</span>
+                <span>Design & Developed By Nobel</span>
                 {onAdminClick && (
                     <button onClick={onAdminClick} className="hover:text-white transition-colors flex items-center gap-1" title="Admin Access">
                         <Lock size={12} />

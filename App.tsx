@@ -17,7 +17,7 @@ import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import ConfirmationModal from './components/ConfirmationModal';
 import { Project, ProfileData } from './types';
-import { INITIAL_PROJECTS } from './constants';
+import { INITIAL_PROJECTS, DEFAULT_PROFILE_DATA } from './constants';
 import { projectService } from './services/projectService';
 
 type ViewState = 'home' | 'admin-login' | 'admin-dashboard';
@@ -43,8 +43,8 @@ function App() {
     return 'home';
   });
   
-  // Profile Data
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  // Profile Data - Initialized with Default Data for instant render / backup
+  const [profileData, setProfileData] = useState<ProfileData>(DEFAULT_PROFILE_DATA);
 
   // Confirmation Modal State for Projects
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean, projectId: string | null }>({
@@ -61,7 +61,10 @@ function App() {
             projectService.getProfile()
         ]);
         setProjects(projData);
-        if(profData) setProfileData(profData);
+        // Only update if backend returns valid data, otherwise keep using DEFAULT_PROFILE_DATA
+        if(profData && profData.name) {
+            setProfileData(prev => ({ ...prev, ...profData }));
+        }
       } catch (error) {
         console.error("Failed to load initial data", error);
         setProjects([]);
@@ -213,7 +216,7 @@ function App() {
             onProfileUpdate={handleProfileUpdate}
             onLogout={handleAdminLogout}
             onRefreshRequests={handleRefreshRequests}
-            homeLogo={profileData?.homeLogo}
+            homeLogo={profileData.homeLogo}
         />;
     }
 
@@ -230,31 +233,31 @@ function App() {
 
     return (
         <>
-            <Navbar logo={profileData?.homeLogo} />
+            <Navbar logo={profileData.homeLogo} />
             <VerticalLabel />
             
             <main className="w-full">
                 {/* Start Hero animations only after loading is complete */}
                 <Hero 
                     startAnimation={!isLoading} 
-                    heroImage={profileData?.heroImage}
-                    totalProjects={profileData?.totalProjects}
-                    yearsExperience={profileData?.yearsExperience}
-                    name={profileData?.name}
-                    role={profileData?.role}
+                    heroImage={profileData.heroImage}
+                    totalProjects={profileData.totalProjects}
+                    yearsExperience={profileData.yearsExperience}
+                    name={profileData.name}
+                    role={profileData.role}
                 />
                 <About 
-                    aboutImage1={profileData?.aboutImage1}
-                    aboutImage2={profileData?.aboutImage2}
-                    statsValue={profileData?.statsValue}
-                    statsLabel={profileData?.statsLabel}
-                    resumeUrl={profileData?.resumeUrl}
-                    bio={profileData?.bio}
-                    feature1={profileData?.feature1}
-                    feature2={profileData?.feature2}
-                    linkedin={profileData?.socialLinkedin}
-                    behance={profileData?.socialBehance}
-                    instagram={profileData?.socialInstagram}
+                    aboutImage1={profileData.aboutImage1}
+                    aboutImage2={profileData.aboutImage2}
+                    statsValue={profileData.statsValue}
+                    statsLabel={profileData.statsLabel}
+                    resumeUrl={profileData.resumeUrl}
+                    bio={profileData.bio}
+                    feature1={profileData.feature1}
+                    feature2={profileData.feature2}
+                    linkedin={profileData.socialLinkedin}
+                    behance={profileData.socialBehance}
+                    instagram={profileData.socialInstagram}
                 />
                 <Process />
                 <Projects 
@@ -263,15 +266,15 @@ function App() {
                     onProjectUpdate={handleProjectUpdate}
                 />
                 <Contact 
-                    email={profileData?.email} 
-                    linkedin={profileData?.socialLinkedin}
-                    behance={profileData?.socialBehance}
-                    instagram={profileData?.socialInstagram}
+                    email={profileData.email} 
+                    linkedin={profileData.socialLinkedin}
+                    behance={profileData.socialBehance}
+                    instagram={profileData.socialInstagram}
                 />
                 <Footer 
                     onAdminClick={() => setView('admin-login')} 
-                    email={profileData?.email}
-                    year={profileData?.copyrightYear}
+                    email={profileData.email}
+                    year={profileData.copyrightYear}
                 />
             </main>
         </>
