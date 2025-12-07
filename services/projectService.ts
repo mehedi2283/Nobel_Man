@@ -109,6 +109,18 @@ export const projectService = {
     return await response.json();
   },
 
+
+    async markCommentRead(projectId: string, commentId: string): Promise<Project> {
+    const response = await fetch(`${API_URL}/${projectId}/comments/${commentId}/read`, {
+        method: 'PUT'
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to mark comment read: ${response.statusText}`);
+    }
+    return await response.json();
+  },
+
+
   // --- Client Logo Methods ---
 
   async getClientLogos(): Promise<ClientLogo[]> {
@@ -197,6 +209,15 @@ export const projectService = {
     return await response.json();
   },
 
+
+    async markMessageRead(id: string): Promise<ContactMessage> {
+    const response = await fetch(`${MESSAGE_API_URL}/${id}/read`, {
+        method: 'PUT'
+    });
+    if (!response.ok) throw new Error('Failed to mark message read');
+    return await response.json();
+  },
+
   async deleteMessage(id: string): Promise<void> {
     const response = await fetch(`${MESSAGE_API_URL}/${id}`, { method: 'DELETE' });
     if (!response.ok) throw new Error('Failed to delete message');
@@ -227,5 +248,14 @@ export const projectService = {
       // Ignore chat log errors in frontend to not disrupt user experience
       console.warn("Failed to log chat interaction");
     }
+
+     },
+
+  async markChatLogRead(id: string): Promise<ChatLog> {
+    const response = await fetch(`${CHAT_LOG_API_URL}/${id}/read`, {
+        method: 'PUT'
+    });
+    if (!response.ok) throw new Error('Failed to mark chat log read');
+    return await response.json();
   }
 };

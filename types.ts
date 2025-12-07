@@ -20,6 +20,7 @@ export interface Comment {
   author: string;
   text: string;
   createdAt: string;
+  read?: boolean;
 }
 
 export interface Project {
@@ -73,6 +74,7 @@ export interface ContactMessage {
   email: string;
   message: string;
   createdAt: string;
+  read?: boolean;
 }
 
 export interface ChatLog {
@@ -80,4 +82,5 @@ export interface ChatLog {
   role: 'user' | 'model';
   text: string;
   createdAt: string;
+  read?: boolean;
 }
