@@ -57,6 +57,7 @@ export interface ProfileData {
   bio: string;
   aboutImage1: string;
   aboutImage2: string;
+  aboutImage3?: string;
   statsValue: string;
   statsLabel: string;
   feature1: string;
@@ -67,6 +68,14 @@ export interface ProfileData {
   email: string;
   copyrightYear: string;
   showTreatModal?: boolean;
+
+  // Dynamic Treat Modal Configuration
+  treatTitle?: string;
+  treatMessage?: string;
+  treatImage?: string;
+  treatButtonText?: string;
+  treatInterval?: number; // Seconds
+  treatMaxShowCount?: number; // How many times to show per session
 }
 
 export interface ContactMessage {

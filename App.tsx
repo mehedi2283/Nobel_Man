@@ -293,9 +293,17 @@ function App() {
       <CustomCursor />
 
 
-       {/* Treat Modal - Visible only on Home View (not admin) */}
+          {/* Treat Modal - Fully Dynamic */}
       {view === 'home' && !selectedProject && (
-        <TreatModal isEnabled={!!profileData.showTreatModal} />
+        <TreatModal 
+            isEnabled={!!profileData.showTreatModal}
+            title={profileData.treatTitle}
+            message={profileData.treatMessage}
+            image={profileData.treatImage}
+            buttonText={profileData.treatButtonText}
+            interval={profileData.treatInterval}
+            maxShowCount={profileData.treatMaxShowCount}
+        />
       )}
       
       <AnimatePresence mode="wait">

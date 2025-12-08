@@ -33,7 +33,13 @@ export const DEFAULT_PROFILE_DATA: ProfileData = {
   socialInstagram: "https://www.instagram.com/shafiul_",
   email: "shafiulislamnobel1@gmail.com",
   copyrightYear: "2024",
-  showTreatModal: false
+  showTreatModal: false,
+  treatTitle: "Treat Pending!",
+  treatMessage: "Need treat ASAP! Don't keep the hunger waiting.",
+  treatImage: "https://i.ibb.co/fGSfy2RF/Kacchi-Biryani-Mutton-large.webp",
+  treatButtonText: "Okay, I'll Treat You!",
+  treatInterval: 5,
+  treatMaxShowCount: 3
 };;
 
 export const AI_SYSTEM_INSTRUCTION = `
