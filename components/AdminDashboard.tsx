@@ -779,7 +779,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><div className="space-y-1.5"><label className="text-xs font-bold text-gray-700 flex items-center gap-1.5"><Linkedin size={12}/> LinkedIn</label><input type="text" name="socialLinkedin" value={profileData.socialLinkedin} onChange={handleProfileChange} className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="URL" /></div><div className="space-y-1.5"><label className="text-xs font-bold text-gray-700 flex items-center gap-1.5"><Globe size={12}/> Behance</label><input type="text" name="socialBehance" value={profileData.socialBehance} onChange={handleProfileChange} className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="URL" /></div><div className="space-y-1.5"><label className="text-xs font-bold text-gray-700 flex items-center gap-1.5"><Instagram size={12}/> Instagram</label><input type="text" name="socialInstagram" value={profileData.socialInstagram} onChange={handleProfileChange} className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="URL" /></div></div>
                             </section>
 
-                            {/* Treat Modal Configuration Section - MOVED TO BOTTOM */}
                             <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
                                 <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
                                     <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-600">
@@ -793,7 +792,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                                     <Input label="Popup Title" name="treatTitle" value={profileData.treatTitle} onChange={handleProfileChange} placeholder="e.g. Treat Pending!" />
+                                    <Input label="Image Title" name="treatImageTitle" value={profileData.treatImageTitle} onChange={handleProfileChange} placeholder="e.g. Kacchi Biryani" />
                                     <Input label="Button Text" name="treatButtonText" value={profileData.treatButtonText} onChange={handleProfileChange} placeholder="e.g. Okay!" />
+                                </div>
+                                <div className="mb-4">
                                     <ImageInput label="Image URL" name="treatImage" value={profileData.treatImage} onChange={handleProfileChange} placeholder="https://..." />
                                 </div>
 

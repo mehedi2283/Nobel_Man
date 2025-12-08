@@ -71,6 +71,7 @@ export interface ProfileData {
 
   // Dynamic Treat Modal Configuration
   treatTitle?: string;
+   treatImageTitle?: string;
   treatMessage?: string;
   treatImage?: string;
   treatButtonText?: string;

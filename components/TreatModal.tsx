@@ -5,6 +5,7 @@ import { X, Utensils } from 'lucide-react';
 interface TreatModalProps {
   isEnabled: boolean;
   title?: string;
+  imageTitle?: string;
   message?: string;
   image?: string;
   buttonText?: string;
@@ -15,6 +16,7 @@ interface TreatModalProps {
 const TreatModal: React.FC<TreatModalProps> = ({ 
   isEnabled,
   title = "Treat Pending!",
+  imageTitle = "Kacchi Biryani",
   message = "Need treat ASAP! Don't keep the hunger waiting.",
   image = "https://i.ibb.co/fGSfy2RF/Kacchi-Biryani-Mutton-large.webp",
   buttonText = "Okay, I'll Treat You!",
@@ -77,7 +79,7 @@ const TreatModal: React.FC<TreatModalProps> = ({
                 <div className="relative h-64 w-full bg-gray-100">
                 <img
                     src={image}
-                    alt={title}
+                    alt={imageTitle || title}
                     className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -87,7 +89,7 @@ const TreatModal: React.FC<TreatModalProps> = ({
                             Pending
                         </span>
                     </div>
-                    <h3 className="text-xl font-bold">{title}</h3>
+                    <h3 className="text-xl font-bold">{imageTitle || title}</h3>
                 </div>
                 </div>
             )}

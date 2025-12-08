@@ -35,6 +35,7 @@ export const DEFAULT_PROFILE_DATA: ProfileData = {
   copyrightYear: "2024",
   showTreatModal: false,
   treatTitle: "Treat Pending!",
+  treatImageTitle: "Kacchi Biryani",
   treatMessage: "Need treat ASAP! Don't keep the hunger waiting.",
   treatImage: "https://i.ibb.co/fGSfy2RF/Kacchi-Biryani-Mutton-large.webp",
   treatButtonText: "Okay, I'll Treat You!",

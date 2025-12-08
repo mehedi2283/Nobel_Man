@@ -298,6 +298,7 @@ function App() {
         <TreatModal 
             isEnabled={!!profileData.showTreatModal}
             title={profileData.treatTitle}
+            imageTitle={profileData.treatImageTitle}
             message={profileData.treatMessage}
             image={profileData.treatImage}
             buttonText={profileData.treatButtonText}
