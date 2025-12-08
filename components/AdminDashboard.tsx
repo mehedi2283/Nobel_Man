@@ -64,13 +64,18 @@ const ExpandableMessage = ({ text, className = "" }: { text: string, className?:
     
     return (
         <div className={className}>
-            <p className={`text-sm leading-relaxed ${!expanded && isLong ? 'line-clamp-2' : ''}`}>
+            <motion.div
+                initial={false}
+                animate={{ height: expanded || !isLong ? "auto" : "3.25em" }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="text-sm leading-relaxed overflow-hidden relative block"
+            >
                 {text}
-            </p>
+            </motion.div>
             {isLong && (
                 <button 
                     onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-                    className="text-xs font-bold mt-2 hover:underline text-blue-600 flex items-center gap-1"
+                    className="text-xs font-bold mt-2 hover:underline text-blue-600 flex items-center gap-1 focus:outline-none"
                 >
                     {expanded ? 'Show Less' : 'Read More'}
                 </button>
@@ -742,7 +747,39 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
                         <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-4xl mx-auto space-y-6 pb-12">
                              <div className="flex justify-between items-center mb-2 sticky top-16 z-20 bg-gray-50/80 backdrop-blur-sm py-3"><h2 className="text-xl font-bold text-gray-900">Profile & Content</h2><motion.button onClick={handleSaveProfile} disabled={saveProfileStatus !== 'idle'} animate={saveProfileStatus} className={`relative px-5 py-2 rounded-lg font-bold text-white shadow-lg flex items-center gap-2 overflow-hidden transition-colors text-sm ${saveProfileStatus === 'success' ? 'bg-green-500 shadow-green-500/30' : saveProfileStatus === 'error' ? 'bg-red-500 shadow-red-500/30' : 'bg-black shadow-black/20 hover:bg-gray-800'}`}><AnimatePresence mode="popLayout" initial={false}>{saveProfileStatus === 'idle' && (<motion.div key="idle" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Save</span><Save size={16} /></motion.div>)}{saveProfileStatus === 'saving' && (<motion.div key="saving" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Saving...</span><Loader2 size={16} className="animate-spin" /></motion.div>)}{saveProfileStatus === 'success' && (<motion.div key="success" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Saved!</span><Check size={16} /></motion.div>)}{saveProfileStatus === 'error' && (<motion.div key="error" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2"><span>Failed</span><AlertCircle size={16} /></motion.div>)}</AnimatePresence></motion.button></div>
                             
-                            {/* Treat Modal Configuration Section */}
+                            <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
+                                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100"><div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600"><User size={16} /></div><div><h3 className="font-bold text-base text-gray-900">Personal Identity</h3></div></div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"><Input label="Full Name" name="name" value={profileData.name} onChange={handleProfileChange} placeholder="e.g. Nobel" /><Input label="Job Title" name="role" value={profileData.role} onChange={handleProfileChange} placeholder="e.g. UX & UI Designer" /></div>
+                                <div className="space-y-1.5"><label className="text-xs font-bold text-gray-700 block uppercase tracking-wide">Short Bio</label><textarea name="bio" value={profileData.bio} onChange={handleProfileChange} rows={3} className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black resize-none text-sm" placeholder="Bio..."/></div>
+                            </section>
+
+                            <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
+                                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100"><div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><LayoutGrid size={16} /></div><div><h3 className="font-bold text-base text-gray-900">Hero Section</h3></div></div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <ImageInput label="Home Logo URL" name="homeLogo" value={profileData.homeLogo} onChange={handleProfileChange} placeholder="Nav logo URL" />
+                                    <ImageInput label="Hero Image URL" name="heroImage" value={profileData.heroImage} onChange={handleProfileChange} placeholder="Main portrait URL" />
+                                    <Input label="Total Projects Count" name="totalProjects" value={profileData.totalProjects} onChange={handleProfileChange} placeholder="e.g. 20" />
+                                    <Input label="Years Experience" name="yearsExperience" value={profileData.yearsExperience} onChange={handleProfileChange} placeholder="e.g. 2" />
+                                </div>
+                            </section>
+
+                            <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
+                                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100"><div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600"><AlignLeft size={16} /></div><div><h3 className="font-bold text-base text-gray-900">About Content</h3></div></div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <ImageInput label="Portrait Image (Vertical)" name="aboutImage1" value={profileData.aboutImage1} onChange={handleProfileChange} placeholder="URL" />
+                                    <ImageInput label="Landscape Image" name="aboutImage2" value={profileData.aboutImage2} onChange={handleProfileChange} placeholder="URL" />
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"><div className="md:col-span-1"><Input label="Stat Value" name="statsValue" value={profileData.statsValue} onChange={handleProfileChange} placeholder="e.g. 100" /></div><div className="md:col-span-2"><Input label="Stat Label" name="statsLabel" value={profileData.statsLabel} onChange={handleProfileChange} placeholder="e.g. User-focused screens..." /></div></div>
+                                <div className="space-y-3"><Input label="Feature Bullet 1" name="feature1" value={profileData.feature1} onChange={handleProfileChange} placeholder="Feature 1..." /><Input label="Feature Bullet 2" name="feature2" value={profileData.feature2} onChange={handleProfileChange} placeholder="Feature 2..." /><Input label="Resume Link" name="resumeUrl" value={profileData.resumeUrl} onChange={handleProfileChange} placeholder="https://..." /></div>
+                            </section>
+                            
+                            <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
+                                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100"><div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-600"><LinkIcon size={16} /></div><div><h3 className="font-bold text-base text-gray-900">Contact & Socials</h3></div></div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"><Input label="Contact Email" name="email" value={profileData.email} onChange={handleProfileChange} placeholder="email@example.com" /><Input label="Copyright Year" name="copyrightYear" value={profileData.copyrightYear} onChange={handleProfileChange} placeholder="2026" /></div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><div className="space-y-1.5"><label className="text-xs font-bold text-gray-700 flex items-center gap-1.5"><Linkedin size={12}/> LinkedIn</label><input type="text" name="socialLinkedin" value={profileData.socialLinkedin} onChange={handleProfileChange} className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="URL" /></div><div className="space-y-1.5"><label className="text-xs font-bold text-gray-700 flex items-center gap-1.5"><Globe size={12}/> Behance</label><input type="text" name="socialBehance" value={profileData.socialBehance} onChange={handleProfileChange} className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="URL" /></div><div className="space-y-1.5"><label className="text-xs font-bold text-gray-700 flex items-center gap-1.5"><Instagram size={12}/> Instagram</label><input type="text" name="socialInstagram" value={profileData.socialInstagram} onChange={handleProfileChange} className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="URL" /></div></div>
+                            </section>
+
+                            {/* Treat Modal Configuration Section - MOVED TO BOTTOM */}
                             <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
                                 <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
                                     <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-600">
@@ -775,38 +812,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ projects, onSaveProject
                                         <input type="number" name="treatMaxShowCount" value={profileData.treatMaxShowCount} onChange={handleProfileChange} className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="3" min="1" />
                                     </div>
                                 </div>
-                            </section>
-
-                            <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
-                                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100"><div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600"><User size={16} /></div><div><h3 className="font-bold text-base text-gray-900">Personal Identity</h3></div></div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"><Input label="Full Name" name="name" value={profileData.name} onChange={handleProfileChange} placeholder="e.g. Nobel" /><Input label="Job Title" name="role" value={profileData.role} onChange={handleProfileChange} placeholder="e.g. UX & UI Designer" /></div>
-                                <div className="space-y-1.5"><label className="text-xs font-bold text-gray-700 block uppercase tracking-wide">Short Bio</label><textarea name="bio" value={profileData.bio} onChange={handleProfileChange} rows={3} className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black resize-none text-sm" placeholder="Bio..."/></div>
-                            </section>
-
-                            <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
-                                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100"><div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><LayoutGrid size={16} /></div><div><h3 className="font-bold text-base text-gray-900">Hero Section</h3></div></div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <ImageInput label="Home Logo URL" name="homeLogo" value={profileData.homeLogo} onChange={handleProfileChange} placeholder="Nav logo URL" />
-                                    <ImageInput label="Hero Image URL" name="heroImage" value={profileData.heroImage} onChange={handleProfileChange} placeholder="Main portrait URL" />
-                                    <Input label="Total Projects Count" name="totalProjects" value={profileData.totalProjects} onChange={handleProfileChange} placeholder="e.g. 20" />
-                                    <Input label="Years Experience" name="yearsExperience" value={profileData.yearsExperience} onChange={handleProfileChange} placeholder="e.g. 2" />
-                                </div>
-                            </section>
-
-                            <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
-                                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100"><div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600"><AlignLeft size={16} /></div><div><h3 className="font-bold text-base text-gray-900">About Content</h3></div></div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <ImageInput label="Portrait Image (Vertical)" name="aboutImage1" value={profileData.aboutImage1} onChange={handleProfileChange} placeholder="URL" />
-                                    <ImageInput label="Landscape Image" name="aboutImage2" value={profileData.aboutImage2} onChange={handleProfileChange} placeholder="URL" />
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"><div className="md:col-span-1"><Input label="Stat Value" name="statsValue" value={profileData.statsValue} onChange={handleProfileChange} placeholder="e.g. 100" /></div><div className="md:col-span-2"><Input label="Stat Label" name="statsLabel" value={profileData.statsLabel} onChange={handleProfileChange} placeholder="e.g. User-focused screens..." /></div></div>
-                                <div className="space-y-3"><Input label="Feature Bullet 1" name="feature1" value={profileData.feature1} onChange={handleProfileChange} placeholder="Feature 1..." /><Input label="Feature Bullet 2" name="feature2" value={profileData.feature2} onChange={handleProfileChange} placeholder="Feature 2..." /><Input label="Resume Link" name="resumeUrl" value={profileData.resumeUrl} onChange={handleProfileChange} placeholder="https://..." /></div>
-                            </section>
-                            
-                            <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
-                                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100"><div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-600"><LinkIcon size={16} /></div><div><h3 className="font-bold text-base text-gray-900">Contact & Socials</h3></div></div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"><Input label="Contact Email" name="email" value={profileData.email} onChange={handleProfileChange} placeholder="email@example.com" /><Input label="Copyright Year" name="copyrightYear" value={profileData.copyrightYear} onChange={handleProfileChange} placeholder="2026" /></div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><div className="space-y-1.5"><label className="text-xs font-bold text-gray-700 flex items-center gap-1.5"><Linkedin size={12}/> LinkedIn</label><input type="text" name="socialLinkedin" value={profileData.socialLinkedin} onChange={handleProfileChange} className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="URL" /></div><div className="space-y-1.5"><label className="text-xs font-bold text-gray-700 flex items-center gap-1.5"><Globe size={12}/> Behance</label><input type="text" name="socialBehance" value={profileData.socialBehance} onChange={handleProfileChange} className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="URL" /></div><div className="space-y-1.5"><label className="text-xs font-bold text-gray-700 flex items-center gap-1.5"><Instagram size={12}/> Instagram</label><input type="text" name="socialInstagram" value={profileData.socialInstagram} onChange={handleProfileChange} className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:border-black font-medium text-sm" placeholder="URL" /></div></div>
                             </section>
 
                             <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
